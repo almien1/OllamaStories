@@ -101,24 +101,40 @@ bool LlamaStories::compileProject()
 
 bool LlamaStories::run()
 {
+    // Close any existing session
     if (m_runner != nullptr)
     {
         closeRunner();
     }
 
+    // New process
     m_runner = std::make_shared<QProcess>();
-    ui->tabWidget->setCurrentWidget(ui->runTab);
 
-    connect(m_runner.get(), &QProcess::readyReadStandardOutput, this, &LlamaStories::handleProcessStdout);
-    connect(m_runner.get(), &QProcess::readyReadStandardError, this, &LlamaStories::handleProcessStderr);
-    connect(m_runner.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &LlamaStories::handleProcessExit);
+    if (m_runner != nullptr)
+    {
 
-    qInfo() << "Running";
-    m_runner->start("ollama", {"run", m_project.m_name});
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("TERM", "dumb"); // Strips out the terminal layout engine noise
+        m_runner->setProcessEnvironment(env);
 
-    bool started = m_runner->waitForStarted();
-    qInfo() << "Started?" << started;
-    return started;
+        ui->tabWidget->setCurrentWidget(ui->runTab);
+
+        connect(m_runner.get(), &QProcess::readyReadStandardOutput, this, &LlamaStories::handleProcessStdout);
+        connect(m_runner.get(), &QProcess::readyReadStandardError, this, &LlamaStories::handleProcessStderr);
+        connect(m_runner.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &LlamaStories::handleProcessExit);
+
+        qInfo() << "About to try running it";
+        m_runner->start("ollama", {"run", m_project.m_name});
+
+        bool started = m_runner->waitForStarted();
+        qInfo() << "Started?" << started;
+        return started;
+    }
+    else
+    {
+        qWarning() << "couldn't create a QProcess";
+        return false;
+    }
 }
 
 void LlamaStories::closeRunner()
