@@ -25,6 +25,16 @@ LlamaStories::~LlamaStories()
     delete ui;
 }
 
+void LlamaStories::closeEvent(QCloseEvent *event)
+{
+    if (m_runner != nullptr)
+    {
+        closeRunner();
+    }
+
+    event->accept();
+}
+
 void LlamaStories::on_actionExit_triggered()
 {
     close();
@@ -77,9 +87,48 @@ void LlamaStories::displayLoadedProject()
 
 bool LlamaStories::compileProject()
 {
+    ui->actionCompile->setEnabled(false);
+    ui->actionCompileAndRun->setEnabled(false);
+
     QString modelFile = R"(C:\Users\user\repos\LlamaWorkspace\Modelfile)";
     m_project.writeModelfile(modelFile);
-    return m_ai.compileModel(m_project.m_name, modelFile);
+    bool success = m_ai.compileModel(m_project.m_name, modelFile);
+
+    ui->actionCompile->setEnabled(true);
+    ui->actionCompileAndRun->setEnabled(true);
+    return success;
+}
+
+bool LlamaStories::run()
+{
+    if (m_runner != nullptr)
+    {
+        closeRunner();
+    }
+
+    m_runner = std::make_shared<QProcess>();
+    ui->tabWidget->setCurrentWidget(ui->runTab);
+
+    connect(m_runner.get(), &QProcess::readyReadStandardOutput, this, &LlamaStories::handleProcessStdout);
+    connect(m_runner.get(), &QProcess::readyReadStandardError, this, &LlamaStories::handleProcessStderr);
+    connect(m_runner.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &LlamaStories::handleProcessExit);
+
+    qInfo() << "Running";
+    m_runner->start("ollama", {"run", m_project.m_name});
+
+    bool started = m_runner->waitForStarted();
+    qInfo() << "Started?" << started;
+    return started;
+}
+
+void LlamaStories::closeRunner()
+{
+    m_runner->kill();
+    if (m_runner->waitForFinished())
+    {
+        // ? what if not ?
+    }
+    m_runner.reset();
 }
 
 
@@ -120,17 +169,62 @@ void LlamaStories::on_slideContext_valueChanged(int value)
 void LlamaStories::on_actionCompileAndRun_triggered()
 {
     compileProject();
+    run();
 }
 
 void LlamaStories::on_actionCompile_triggered()
 {
-    ui->actionCompile->setEnabled(false);
-    ui->actionCompileAndRun->setEnabled(false);
     if (!compileProject())
     {
         QMessageBox::warning(this, "couldn't compile", "couldn't compile project");
     }
-    ui->actionCompile->setEnabled(true);
-    ui->actionCompileAndRun->setEnabled(true);
+}
+
+
+void LlamaStories::on_Run_triggered()
+{
+    run();
+}
+
+void LlamaStories::handleProcessStdout()
+{
+    QByteArray outputData = m_runner->readAllStandardOutput();
+    QString outputString = QString::fromUtf8(outputData);
+    qInfo() << outputString;
+}
+
+void LlamaStories::handleProcessStderr()
+{
+    QByteArray outputData = m_runner->readAllStandardError();
+    QString outputString = QString::fromUtf8(outputData);
+    qWarning() << outputString;
+
+}
+
+void LlamaStories::handleProcessExit(int exitCode, QProcess::ExitStatus)
+{
+    qInfo() << "process finished with code" << exitCode;
+}
+
+
+void LlamaStories::on_pushButton_clicked()
+{
+    if (m_runner != nullptr)
+    {
+        QString text = ui->txtRunInput->toPlainText();
+        if (!text.isEmpty())
+        {
+            ui->txtRunInput->clear();
+            qInfo() << "Sending it " << text;
+            if (m_runner->write(text.toUtf8()) > 0)
+            {
+            }
+        }
+    }
+    else
+    {
+        qWarning() << "nothing running to talk to";
+    }
+
 }
 
