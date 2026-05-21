@@ -42,7 +42,7 @@
        <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="systemPromptTab">
        <attribute name="title">
@@ -62,7 +62,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QTextEdit" name="txtSystemPrompt">
+         <widget class="QTextEdit" name="txtMainPrompt">
           <property name="font">
            <font>
             <family>Consolas</family>
@@ -139,14 +139,14 @@
           <item row="4" column="0">
            <widget class="QLabel" name="lblSettingsFile">
             <property name="text">
-             <string>Technical settings file</string>
+             <string>Global settings file</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <widget class="QLineEdit" name="txtSettingsFile"/>
+             <widget class="QLineEdit" name="txtGlobalFile"/>
             </item>
             <item>
              <widget class="QToolButton" name="btnSetttingsFile">
@@ -296,7 +296,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen_Project"/>
+    <addaction name="actionOpenProject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -320,7 +320,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <addaction name="actionCompileAndRun"/>
    <addaction name="actionRestart"/>
   </widget>
-  <action name="actionOpen_Project">
+  <action name="actionOpenProject">
    <property name="text">
     <string>&amp;Open Project</string>
    </property>

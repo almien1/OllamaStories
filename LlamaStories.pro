@@ -8,10 +8,12 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    llama_stories.cpp
+    llama_stories.cpp \
+    story_project.cpp
 
 HEADERS += \
-    llama_stories.h
+    llama_stories.h \
+    story_project.h
 
 FORMS += \
     llama_stories.ui

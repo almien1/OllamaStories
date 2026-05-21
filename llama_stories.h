@@ -2,6 +2,7 @@
 #define LLAMA_STORIES_H
 
 #include <QMainWindow>
+#include "story_project.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -19,8 +20,26 @@ public:
 
 private slots:
     void on_actionExit_triggered();
+    void on_actionOpenProject_triggered();
+    void on_actionSave_triggered();
+
+    void on_txtMainPrompt_textChanged();
+
+    void on_txtGlobalPrompt_textChanged();
+
+    void on_cmbModel_currentTextChanged(const QString &arg1);
+
+    void on_slideTemp_valueChanged(int value);
+
+    void on_slideContext_valueChanged(int value);
 
 private:
+
+    void displayLoadedProject();
+
     Ui::LlamaStories *ui;
+
+    StoryProject m_project;
+
 };
 #endif // LLAMA_STORIES_H
