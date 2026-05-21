@@ -33,6 +33,8 @@ private slots:
 
     void on_slideContext_valueChanged(int value);
 
+    void on_actionCompileAndRun_triggered();
+
 private:
 
     void displayLoadedProject();

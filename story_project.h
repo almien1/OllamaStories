@@ -13,6 +13,9 @@ public:
     bool save();
     bool saveAs(const QString &filename);
 
+    bool writeModelfile(const QString &filename);
+    QString asModelfile() const;
+
     // Storage
     bool m_dirty = true;
     QString m_filename;

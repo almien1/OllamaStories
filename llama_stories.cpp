@@ -107,6 +107,6 @@ void LlamaStories::on_slideContext_valueChanged(int value)
 
 void LlamaStories::on_actionCompileAndRun_triggered()
 {
-
+    m_project.writeModelfile(R"(C:\Users\user\repos\LlamaWorkspace\Modelfile)");
 }
 
