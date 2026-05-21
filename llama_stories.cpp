@@ -75,6 +75,13 @@ void LlamaStories::displayLoadedProject()
     ui->txtGlobalFile->setText(m_project.m_globalsFile);
 }
 
+bool LlamaStories::compileProject()
+{
+    QString modelFile = R"(C:\Users\user\repos\LlamaWorkspace\Modelfile)";
+    m_project.writeModelfile(modelFile);
+    return m_ai.compileModel(m_project.m_name, modelFile);
+}
+
 
 void LlamaStories::on_txtMainPrompt_textChanged()
 {
@@ -112,10 +119,18 @@ void LlamaStories::on_slideContext_valueChanged(int value)
 
 void LlamaStories::on_actionCompileAndRun_triggered()
 {
-    QString modelFile = R"(C:\Users\user\repos\LlamaWorkspace\Modelfile)";
-    m_project.writeModelfile(modelFile);
-    m_ai.compileModel(m_project.m_name, modelFile);
+    compileProject();
 }
 
-
+void LlamaStories::on_actionCompile_triggered()
+{
+    ui->actionCompile->setEnabled(false);
+    ui->actionCompileAndRun->setEnabled(false);
+    if (!compileProject())
+    {
+        QMessageBox::warning(this, "couldn't compile", "couldn't compile project");
+    }
+    ui->actionCompile->setEnabled(true);
+    ui->actionCompileAndRun->setEnabled(true);
+}
 

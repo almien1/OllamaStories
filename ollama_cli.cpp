@@ -2,7 +2,7 @@
 #include <QProcess>
 #include <QDebug>
 
-void OllamaCLI::compileModel(const QString &projectName, const QString &modelfile)
+bool OllamaCLI::compileModel(const QString &projectName, const QString &modelfile)
 {
     QProcess p;
     p.start("ollama", {"create", projectName, "-f", modelfile});
@@ -11,10 +11,11 @@ void OllamaCLI::compileModel(const QString &projectName, const QString &modelfil
     {
         qInfo() << p.readAllStandardOutput();
         qInfo() << p.readAllStandardError();
-        qInfo() << "exited with code" << p.exitCode();
+        return (p.exitCode() == 0);
     }
     else
     {
         p.kill();
+        return false;
     }
 }

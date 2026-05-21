@@ -5,7 +5,7 @@
 class OllamaCLI
 {
 public:
-    void compileModel(const QString &projectName, const QString &modelfile);
+    bool compileModel(const QString &projectName, const QString &modelfile);
 };
 
 #endif // OLLAMA_CLI_H

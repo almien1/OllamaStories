@@ -222,7 +222,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>236</height>
+            <height>244</height>
            </size>
           </property>
          </spacer>
@@ -321,7 +321,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <string>toolBar</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextOnly</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -331,7 +331,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </attribute>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
+   <addaction name="actionCompile"/>
    <addaction name="actionCompileAndRun"/>
+   <addaction name="Run"/>
    <addaction name="actionRestart"/>
   </widget>
   <action name="actionOpenProject">
@@ -368,10 +370,32 @@ li.checked::marker { content: &quot;\2612&quot;; }
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset theme="QIcon::ThemeIcon::MailForward"/>
+    <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
    </property>
    <property name="text">
     <string>Save</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionCompile">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ObjectRotateRight"/>
+   </property>
+   <property name="text">
+    <string>Compile</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="Run">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
+   </property>
+   <property name="text">
+    <string>Run</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

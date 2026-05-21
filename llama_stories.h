@@ -38,9 +38,12 @@ private slots:
 
     void on_txtProjectName_textChanged(const QString &arg1);
 
+    void on_actionCompile_triggered();
+
 private:
 
     void displayLoadedProject();
+    bool compileProject();
 
     Ui::LlamaStories *ui;
 
