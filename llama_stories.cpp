@@ -67,6 +67,7 @@ void LlamaStories::on_actionSave_triggered()
 
 void LlamaStories::displayLoadedProject()
 {
+    ui->txtProjectName->setText(m_project.m_name);
     ui->txtMainPrompt->setText(m_project.m_prompt);
     ui->cmbModel->setEditText(m_project.m_model);
     ui->slideTemp->setValue(m_project.m_temperature * 100);
@@ -86,6 +87,10 @@ void LlamaStories::on_txtGlobalPrompt_textChanged()
     // todo save this somewhere else (in m_project.m_globalsFile)
 }
 
+void LlamaStories::on_txtProjectName_textChanged(const QString &text)
+{
+    m_project.m_name = text;
+}
 
 void LlamaStories::on_cmbModel_currentTextChanged(const QString &text)
 {
@@ -109,4 +114,6 @@ void LlamaStories::on_actionCompileAndRun_triggered()
 {
     m_project.writeModelfile(R"(C:\Users\user\repos\LlamaWorkspace\Modelfile)");
 }
+
+
 

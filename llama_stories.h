@@ -35,6 +35,8 @@ private slots:
 
     void on_actionCompileAndRun_triggered();
 
+    void on_txtProjectName_textChanged(const QString &arg1);
+
 private:
 
     void displayLoadedProject();

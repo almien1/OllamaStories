@@ -21,6 +21,7 @@ public:
     QString m_filename;
 
     // Settings
+    QString m_name;
     QString m_prompt;
     QString m_model;
     double m_temperature;

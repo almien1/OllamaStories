@@ -17,6 +17,7 @@ bool StoryProject::load(const QString &filename)
         {
             success = true;
             QJsonObject json = doc.object();
+            m_name = json.value("project_name").toString("untitled_llama_story");
             m_prompt = json.value("prompt").toString("");
             m_model = json.value("model").toString("gemma3:12b");
             m_temperature = json.value("temperature").toDouble();
@@ -41,6 +42,7 @@ bool StoryProject::saveAs(const QString &filename)
     if (file.open(QIODevice::WriteOnly))
     {
         QJsonObject json;
+        json.insert("project_name", m_name);
         json.insert("prompt", m_prompt);
         json.insert("model", m_model);
         json.insert("temperature", m_temperature);
