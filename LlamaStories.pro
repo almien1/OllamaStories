@@ -9,10 +9,12 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     llama_stories.cpp \
+    ollama_cli.cpp \
     story_project.cpp
 
 HEADERS += \
     llama_stories.h \
+    ollama_cli.h \
     story_project.h
 
 FORMS += \

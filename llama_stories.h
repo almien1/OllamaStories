@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "story_project.h"
+#include "ollama_cli.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -44,6 +45,7 @@ private:
     Ui::LlamaStories *ui;
 
     StoryProject m_project;
+    OllamaCLI m_ai;
 
 };
 #endif // LLAMA_STORIES_H
