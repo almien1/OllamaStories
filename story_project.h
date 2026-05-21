@@ -14,14 +14,14 @@ public:
     bool saveAs(const QString &filename);
 
     // Storage
-    bool m_dirty = false;
+    bool m_dirty = true;
     QString m_filename;
 
     // Settings
     QString m_prompt;
     QString m_model;
     double m_temperature;
-    uint m_context;
+    int m_context;
 
     // References
     QString m_globalsFile;

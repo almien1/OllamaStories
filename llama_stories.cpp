@@ -8,6 +8,16 @@ LlamaStories::LlamaStories(QWidget *parent)
     , ui(new Ui::LlamaStories)
 {
     ui->setupUi(this);
+
+    if (m_project.load(R"(C:\Users\user\repos\LlamaWorkspace\project.json)"))
+    {
+        displayLoadedProject();
+    }
+    else
+    {
+        QMessageBox::warning(this, "couldn't load", "couldn't load project");
+    }
+
 }
 
 LlamaStories::~LlamaStories()
@@ -58,7 +68,7 @@ void LlamaStories::on_actionSave_triggered()
 void LlamaStories::displayLoadedProject()
 {
     ui->txtMainPrompt->setText(m_project.m_prompt);
-    //ui->cmbModel->set = m_project.m_model;
+    ui->cmbModel->setEditText(m_project.m_model);
     ui->slideTemp->setValue(m_project.m_temperature * 100);
     ui->slideContext->setValue(m_project.m_context);
     ui->txtGlobalFile->setText(m_project.m_globalsFile);
@@ -77,9 +87,9 @@ void LlamaStories::on_txtGlobalPrompt_textChanged()
 }
 
 
-void LlamaStories::on_cmbModel_currentTextChanged(const QString &arg1)
+void LlamaStories::on_cmbModel_currentTextChanged(const QString &text)
 {
-    m_project.m_model = ui->cmbModel->currentText();
+    m_project.m_model = text;
 }
 
 
@@ -92,5 +102,11 @@ void LlamaStories::on_slideTemp_valueChanged(int value)
 void LlamaStories::on_slideContext_valueChanged(int value)
 {
     m_project.m_context = value;
+}
+
+
+void LlamaStories::on_actionCompileAndRun_triggered()
+{
+
 }
 
