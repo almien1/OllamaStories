@@ -6,6 +6,8 @@
 #include "story_project.h"
 #include "ollama_cli.h"
 
+class QListWidgetItem;
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class LlamaStories;
@@ -24,40 +26,47 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
+    // Menu
     void on_actionExit_triggered();
     void on_actionOpenProject_triggered();
     void on_actionSave_triggered();
 
-    void on_txtMainPrompt_textChanged();
-
-    void on_txtGlobalPrompt_textChanged();
-
-    void on_cmbModel_currentTextChanged(const QString &arg1);
-
-    void on_slideTemp_valueChanged(int value);
-
-    void on_slideContext_valueChanged(int value);
-
+    // Toolbar
     void on_actionCompileAndRun_triggered();
-
-    void on_txtProjectName_textChanged(const QString &arg1);
-
     void on_actionCompile_triggered();
-
     void on_Run_triggered();
 
+    // Main editor
+    void on_txtStoryPrompt_textChanged();
+    void on_listStories_itemPressed(QListWidgetItem *item);
+    void on_btnNewStory_clicked();
+    void on_btnDeleteStory_clicked();
+
+    // Global prompt editor
+    void on_txtGlobalPrompt_textChanged();
+
+    // Settings
+    void on_txtProjectName_textChanged(const QString &arg1);
+    void on_cmbModel_currentTextChanged(const QString &arg1);
+    void on_slideTemp_valueChanged(int value);
+    void on_slideContext_valueChanged(int value);
+
+    // Interactive
+    void on_pushButton_clicked();
     void handleProcessStdout();
     void handleProcessStderr();
     void handleProcessExit(int exitCode, QProcess::ExitStatus exitStatus);
 
-    void on_pushButton_clicked();
 
-    void on_listStories_itemSelectionChanged();
+
 
 private:
-
     void saveProject();
     void displayLoadedProject();
+    void displayStoryList();
+    void displaySelectedStory();
+    void selectStory(const QString &name);
+
     bool compileProject();
     void run();
     void closeRunner();

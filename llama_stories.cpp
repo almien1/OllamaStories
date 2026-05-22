@@ -1,6 +1,7 @@
 #include "llama_stories.h"
 #include "ui_llama_stories.h"
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMessageBox>
 
 LlamaStories::LlamaStories(QWidget *parent)
@@ -83,11 +84,40 @@ void LlamaStories::on_actionSave_triggered()
 void LlamaStories::displayLoadedProject()
 {
     ui->txtProjectName->setText(m_project.m_name);
-    ui->txtMainPrompt->setText(m_project.m_prompt);
+    ui->txtStoryPrompt->setText(m_project.m_stories.value(m_project.m_selectedStory));
     ui->txtGlobalPrompt->setText(m_project.m_globalPrompt);
     ui->cmbModel->setEditText(m_project.m_model);
     ui->slideTemp->setValue(m_project.m_temperature * 100);
     ui->slideContext->setValue(m_project.m_context);
+    displayStoryList();
+}
+
+void LlamaStories::displayStoryList()
+{
+    ui->listStories->clear();
+    for (QString name : m_project.m_stories.keys())
+    {
+        ui->listStories->addItem(name);
+    }
+}
+
+void LlamaStories::displaySelectedStory()
+{
+    ui->txtStoryPrompt->setText(m_project.m_stories.value(m_project.m_selectedStory));
+}
+
+void LlamaStories::selectStory(const QString &name)
+{
+    m_project.m_selectedStory = name;
+
+    for(int i = 0; i < ui->listStories->count(); i++)
+    {
+        if (ui->listStories->item(i)->text() == name)
+        {
+            ui->listStories->setCurrentRow(i);
+            break;
+        }
+    }
 }
 
 bool LlamaStories::compileProject()
@@ -151,9 +181,12 @@ void LlamaStories::closeRunner()
 }
 
 
-void LlamaStories::on_txtMainPrompt_textChanged()
+void LlamaStories::on_txtStoryPrompt_textChanged()
 {
-    m_project.m_prompt = ui->txtMainPrompt->toPlainText();
+    if (!m_project.m_selectedStory.isEmpty())
+    {
+        m_project.m_stories[m_project.m_selectedStory] = ui->txtStoryPrompt->toPlainText();
+    }
 }
 
 void LlamaStories::on_txtGlobalPrompt_textChanged()
@@ -171,18 +204,15 @@ void LlamaStories::on_cmbModel_currentTextChanged(const QString &text)
     m_project.m_model = text;
 }
 
-
 void LlamaStories::on_slideTemp_valueChanged(int value)
 {
     m_project.m_temperature = 0.01 * value;
 }
 
-
 void LlamaStories::on_slideContext_valueChanged(int value)
 {
     m_project.m_context = value;
 }
-
 
 void LlamaStories::on_actionCompileAndRun_triggered()
 {
@@ -246,9 +276,34 @@ void LlamaStories::on_pushButton_clicked()
 
 }
 
-
-void LlamaStories::on_listStories_itemSelectionChanged()
+void LlamaStories::on_btnNewStory_clicked()
 {
+    QString name = QInputDialog::getText(this, "New story", "Story name");
+    m_project.m_stories.insert(name, "");
+    displayStoryList();
+    selectStory(name);
+    displaySelectedStory();
+}
 
+void LlamaStories::on_btnDeleteStory_clicked()
+{
+    if (!m_project.m_selectedStory.isEmpty())
+    {
+        m_project.m_stories.remove(m_project.m_selectedStory);
+        displayStoryList();
+        if (!m_project.m_stories.isEmpty())
+        {
+            m_project.m_selectedStory =  m_project.m_stories.first();
+            displaySelectedStory();
+        }
+    }
+}
+
+
+void LlamaStories::on_listStories_itemPressed(QListWidgetItem *item)
+{
+    m_project.m_selectedStory = item->text();
+
+    displaySelectedStory();
 }
 

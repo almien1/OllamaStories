@@ -1,6 +1,7 @@
 #ifndef STORY_PROJECT_H
 #define STORY_PROJECT_H
 #include <QString>
+#include <QMap>
 
 class StoryProject
 {
@@ -20,9 +21,12 @@ public:
     bool m_dirty = true;
     QString m_filename;
 
+    using Stories = QMap<QString , QString>; // name, prompt
+
     // Settings
     QString m_name; // model name within ollama
-    QString m_prompt;
+    Stories m_stories;
+    QString m_selectedStory;
     QString m_model;
     double m_temperature;
     int m_context; // number of tokens to remember

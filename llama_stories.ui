@@ -42,7 +42,7 @@
        <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="systemPromptTab">
        <attribute name="title">
@@ -64,7 +64,11 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QListWidget" name="listStories"/>
+           <widget class="QListWidget" name="listStories">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -100,7 +104,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QTextEdit" name="txtMainPrompt">
+         <widget class="QTextEdit" name="txtStoryPrompt">
           <property name="font">
            <font>
             <family>Consolas</family>
