@@ -52,11 +52,14 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_listStories_itemSelectionChanged();
+
 private:
 
+    void saveProject();
     void displayLoadedProject();
     bool compileProject();
-    bool run();
+    void run();
     void closeRunner();
 
     Ui::LlamaStories *ui;

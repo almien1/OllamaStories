@@ -9,6 +9,7 @@ LlamaStories::LlamaStories(QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->tabWidget->setCurrentIndex(0);
     if (m_project.load(R"(C:\Users\user\repos\LlamaWorkspace\project.json)"))
     {
         displayLoadedProject();
@@ -50,8 +51,7 @@ void LlamaStories::on_actionOpenProject_triggered()
     }
 }
 
-
-void LlamaStories::on_actionSave_triggered()
+void LlamaStories::saveProject()
 {
     if (m_project.dirty())
     {
@@ -75,18 +75,25 @@ void LlamaStories::on_actionSave_triggered()
     }
 }
 
+void LlamaStories::on_actionSave_triggered()
+{
+    saveProject();
+}
+
 void LlamaStories::displayLoadedProject()
 {
     ui->txtProjectName->setText(m_project.m_name);
     ui->txtMainPrompt->setText(m_project.m_prompt);
+    ui->txtGlobalPrompt->setText(m_project.m_globalPrompt);
     ui->cmbModel->setEditText(m_project.m_model);
     ui->slideTemp->setValue(m_project.m_temperature * 100);
     ui->slideContext->setValue(m_project.m_context);
-    ui->txtGlobalFile->setText(m_project.m_globalsFile);
 }
 
 bool LlamaStories::compileProject()
 {
+    saveProject();
+
     ui->actionCompile->setEnabled(false);
     ui->actionCompileAndRun->setEnabled(false);
 
@@ -99,7 +106,7 @@ bool LlamaStories::compileProject()
     return success;
 }
 
-bool LlamaStories::run()
+void LlamaStories::run()
 {
     // Close any existing session
     if (m_runner != nullptr)
@@ -123,17 +130,13 @@ bool LlamaStories::run()
         connect(m_runner.get(), &QProcess::readyReadStandardError, this, &LlamaStories::handleProcessStderr);
         connect(m_runner.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &LlamaStories::handleProcessExit);
 
-        qInfo() << "About to try running it";
         m_runner->start("ollama", {"run", m_project.m_name});
+        qInfo() << "Run the start command for" << m_project.m_name;
 
-        bool started = m_runner->waitForStarted();
-        qInfo() << "Started?" << started;
-        return started;
     }
     else
     {
         qWarning() << "couldn't create a QProcess";
-        return false;
     }
 }
 
@@ -153,10 +156,9 @@ void LlamaStories::on_txtMainPrompt_textChanged()
     m_project.m_prompt = ui->txtMainPrompt->toPlainText();
 }
 
-
 void LlamaStories::on_txtGlobalPrompt_textChanged()
 {
-    // todo save this somewhere else (in m_project.m_globalsFile)
+    m_project.m_globalPrompt = ui->txtGlobalPrompt->toPlainText();
 }
 
 void LlamaStories::on_txtProjectName_textChanged(const QString &text)
@@ -241,6 +243,12 @@ void LlamaStories::on_pushButton_clicked()
     {
         qWarning() << "nothing running to talk to";
     }
+
+}
+
+
+void LlamaStories::on_listStories_itemSelectionChanged()
+{
 
 }
 

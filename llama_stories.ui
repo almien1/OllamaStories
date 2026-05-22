@@ -42,13 +42,13 @@
        <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="systemPromptTab">
        <attribute name="title">
-        <string>Story</string>
+        <string>Stories</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,4">
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -61,6 +61,44 @@
         <property name="bottomMargin">
          <number>0</number>
         </property>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QListWidget" name="listStories"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QToolButton" name="btnNewStory">
+              <property name="text">
+               <string>New</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="btnDeleteStory">
+              <property name="text">
+               <string>Del</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
         <item>
          <widget class="QTextEdit" name="txtMainPrompt">
           <property name="font">
@@ -78,7 +116,7 @@
       </widget>
       <widget class="QWidget" name="globalPromptTab">
        <attribute name="title">
-        <string>Technical</string>
+        <string>Global</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="leftMargin">
@@ -136,13 +174,6 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="lblSettingsFile">
-            <property name="text">
-             <string>Global settings file</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="1">
            <widget class="QSlider" name="slideContext">
             <property name="minimum">
@@ -167,20 +198,6 @@
              <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
-          </item>
-          <item row="4" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLineEdit" name="txtGlobalFile"/>
-            </item>
-            <item>
-             <widget class="QToolButton" name="btnSetttingsFile">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
           </item>
           <item row="2" column="1">
            <widget class="QSlider" name="slideTemp">
@@ -222,7 +239,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>244</height>
+            <height>274</height>
            </size>
           </property>
          </spacer>
