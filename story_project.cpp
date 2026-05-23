@@ -66,6 +66,7 @@ bool StoryProject::saveAs(const QString &filename)
         if (file.write(QJsonDocument(json).toJson(QJsonDocument::Indented)) > 0)
         {
             success = true;
+            m_filename = filename;
         }
     }
     return success;
