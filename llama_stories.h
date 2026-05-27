@@ -5,7 +5,8 @@
 #include <QProcess> // just while we figure out where it should go
 #include "story_project.h"
 #include "ollama_cli.h"
-#include "ollama-hpp/singleheader/ollama.hpp"
+
+class Ollama;
 
 class QListWidgetItem;
 
@@ -54,12 +55,9 @@ private slots:
 
     // Interactive
     void on_pushButton_clicked();
-    void handleProcessStdout();
-    void handleProcessStderr();
-    void handleProcessExit(int exitCode, QProcess::ExitStatus exitStatus);
 
 
-
+    bool on_receive_response(const ollama::response& response);
 
 private:
     void saveProject();
@@ -70,7 +68,6 @@ private:
 
     bool compileProject();
     void run();
-    void closeRunner();
 
     void updateModelList();
 
@@ -80,8 +77,6 @@ private:
 
     StoryProject m_project;
     OllamaCLI m_ai;
-
-    std::shared_ptr<QProcess> m_runner = nullptr;
 
 };
 #endif // LLAMA_STORIES_H

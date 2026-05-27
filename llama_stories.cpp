@@ -32,11 +32,6 @@ LlamaStories::~LlamaStories()
 
 void LlamaStories::closeEvent(QCloseEvent *event)
 {
-    if (m_runner != nullptr)
-    {
-        closeRunner();
-    }
-
     event->accept();
 }
 
@@ -148,49 +143,46 @@ bool LlamaStories::compileProject()
 
 void LlamaStories::run()
 {
-    // Close any existing session
-    if (m_runner != nullptr)
+    if (m_server->is_running())
     {
-        closeRunner();
+        ui->tabWidget->setCurrentIndex(3);
+        QCoreApplication::processEvents();
+
+        //auto response = m_server->generate(m_project.m_name.toStdString(), "Hello?");
+        //ui->txtRunOutput->setPlainText(QString::fromStdString(response.as_json_string()));
+
+        std::function<bool(const ollama::response&)> response_callback = std::bind(
+            &LlamaStories::on_receive_response,
+            this,
+            std::placeholders::_1
+            );
+
+        ollama::message message("user", "Hello?");
+
+        ollama::options options; //["seed"], ["temperature"], ["num_predict"]
+
+        ollama::chat(m_project.m_name.toStdString(), message, response_callback, options);
+
+
     }
 
-    // New process
-    m_runner = std::make_shared<QProcess>();
-
-    if (m_runner != nullptr)
-    {
-
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        env.insert("TERM", "dumb"); // Strips out the terminal layout engine noise
-        m_runner->setProcessEnvironment(env);
-
-        ui->tabWidget->setCurrentWidget(ui->runTab);
-
-        connect(m_runner.get(), &QProcess::readyReadStandardOutput, this, &LlamaStories::handleProcessStdout);
-        connect(m_runner.get(), &QProcess::readyReadStandardError, this, &LlamaStories::handleProcessStderr);
-        connect(m_runner.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &LlamaStories::handleProcessExit);
-
-        m_runner->start("ollama", {"run", m_project.m_name});
-        qInfo() << "Run the start command for" << m_project.m_name;
-
-        // TODO: integrate with API - maybe https://github.com/jmont-dev/ollama-hpp
-
-        // for now, just "ollama run --hidethinking [name]
-    }
-    else
-    {
-        qWarning() << "couldn't create a QProcess";
-    }
 }
 
-void LlamaStories::closeRunner()
+bool LlamaStories::on_receive_response(const ollama::response& response)
 {
-    m_runner->kill();
-    if (m_runner->waitForFinished())
-    {
-        // ? what if not ?
-    }
-    m_runner.reset();
+    //if (response.as_json()["done"]==true) std::cout << std::endl;
+
+    QString newText = QString::fromStdString(response.as_simple_string());
+
+    // This would add a newline every time
+    // ui->txtRunOutput->append(newText);
+
+    ui->txtRunOutput->moveCursor(QTextCursor::End);
+    ui->txtRunOutput->insertPlainText(newText);
+    QCoreApplication::processEvents();
+
+    // Return true to continue streaming, or false to stop immediately
+    return true;
 }
 
 void LlamaStories::updateModelList()
@@ -262,46 +254,10 @@ void LlamaStories::on_Run_triggered()
     run();
 }
 
-void LlamaStories::handleProcessStdout()
-{
-    QByteArray outputData = m_runner->readAllStandardOutput();
-    QString outputString = QString::fromUtf8(outputData);
-    qInfo() << outputString;
-}
-
-void LlamaStories::handleProcessStderr()
-{
-    QByteArray outputData = m_runner->readAllStandardError();
-    QString outputString = QString::fromUtf8(outputData);
-    qWarning() << outputString;
-
-}
-
-void LlamaStories::handleProcessExit(int exitCode, QProcess::ExitStatus)
-{
-    qInfo() << "process finished with code" << exitCode;
-}
-
-
 void LlamaStories::on_pushButton_clicked()
 {
-    if (m_runner != nullptr)
-    {
-        QString text = ui->txtRunInput->toPlainText();
-        if (!text.isEmpty())
-        {
-            ui->txtRunInput->clear();
-            qInfo() << "Sending it " << text;
-            if (m_runner->write(text.toUtf8()) > 0)
-            {
-            }
-        }
-    }
-    else
-    {
-        qWarning() << "nothing running to talk to";
-    }
 
+    // TODO; talk
 }
 
 void LlamaStories::on_btnNewStory_clicked()

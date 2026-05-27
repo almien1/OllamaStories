@@ -15,6 +15,7 @@ SOURCES += \
 HEADERS += \
     llama_stories.h \
     ollama_cli.h \
+    pch.h \
     story_project.h
 
 FORMS += \
@@ -29,9 +30,9 @@ win32 {
     LIBS += -lws2_32
 }
 
-CONFIG += precompiled_header
+// CONFIG += precompiled_header
 
-PRECOMPILED_HEADER = ollama-hpp/singleheader/ollama.hpp
+PRECOMPILED_HEADER = pch.h
 
 DISTFILES += \
     notes.md \
