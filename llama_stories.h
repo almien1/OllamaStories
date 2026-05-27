@@ -5,6 +5,7 @@
 #include <QProcess> // just while we figure out where it should go
 #include "story_project.h"
 #include "ollama_cli.h"
+#include "ollama-hpp/singleheader/ollama.hpp"
 
 class QListWidgetItem;
 
@@ -71,7 +72,11 @@ private:
     void run();
     void closeRunner();
 
+    void updateModelList();
+
     Ui::LlamaStories *ui;
+
+    std::shared_ptr<Ollama> m_server;
 
     StoryProject m_project;
     OllamaCLI m_ai;

@@ -4,24 +4,25 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "ollama-hpp/singleheader/ollama.hpp"
+
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::LlamaStories)
+    , m_server(std::make_shared<Ollama>("http://localhost:11434"))
 {
     ui->setupUi(this);
 
     ui->tabWidget->setCurrentIndex(0);
+
     /*
     if (m_project.load(R"(C:\Users\user\repos\LlamaWorkspace\project.json)"))
     {
         displayLoadedProject();
     }
-    else
-    {
-        QMessageBox::warning(this, "couldn't load", "couldn't load project");
-    }
     */
 
+    updateModelList();
 }
 
 LlamaStories::~LlamaStories()
@@ -190,6 +191,21 @@ void LlamaStories::closeRunner()
         // ? what if not ?
     }
     m_runner.reset();
+}
+
+void LlamaStories::updateModelList()
+{
+
+    if (m_server->is_running())
+    {
+        ui->cmbModel->clear();
+        for (const auto &model : m_server->list_models())
+        {
+            ui->cmbModel->addItem(QString::fromStdString(model));
+        }
+        ui->cmbModel->setCurrentText(m_project.m_model);
+    }
+
 }
 
 

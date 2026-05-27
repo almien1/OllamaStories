@@ -25,6 +25,14 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+win32 {
+    LIBS += -lws2_32
+}
+
+CONFIG += precompiled_header
+
+PRECOMPILED_HEADER = ollama-hpp/singleheader/ollama.hpp
+
 DISTFILES += \
     notes.md \
     readme.md
