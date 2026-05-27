@@ -11,6 +11,7 @@ LlamaStories::LlamaStories(QWidget *parent)
     ui->setupUi(this);
 
     ui->tabWidget->setCurrentIndex(0);
+    /*
     if (m_project.load(R"(C:\Users\user\repos\LlamaWorkspace\project.json)"))
     {
         displayLoadedProject();
@@ -19,6 +20,7 @@ LlamaStories::LlamaStories(QWidget *parent)
     {
         QMessageBox::warning(this, "couldn't load", "couldn't load project");
     }
+    */
 
 }
 
@@ -45,10 +47,17 @@ void LlamaStories::on_actionExit_triggered()
 
 void LlamaStories::on_actionOpenProject_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, "open project");
+    QString filename = QFileDialog::getOpenFileName(this, "open project", "../../../../LlamaWorkspace", "*.json");
     if (!filename.isEmpty())
     {
-        m_project.load(filename);
+        if (m_project.load(filename))
+        {
+            displayLoadedProject();
+        }
+        else
+        {
+            QMessageBox::warning(this, "Could not open project", "Could not open project");
+        }
     }
 }
 
@@ -163,6 +172,9 @@ void LlamaStories::run()
         m_runner->start("ollama", {"run", m_project.m_name});
         qInfo() << "Run the start command for" << m_project.m_name;
 
+        // TODO: integrate with API - maybe https://github.com/jmont-dev/ollama-hpp
+
+        // for now, just "ollama run --hidethinking [name]
     }
     else
     {
