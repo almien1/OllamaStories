@@ -9,11 +9,13 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     llama_stories.cpp \
+    mru_files.cpp \
     ollama_cli.cpp \
     story_project.cpp
 
 HEADERS += \
     llama_stories.h \
+    mru_files.h \
     ollama_cli.h \
     pch.h \
     story_project.h
@@ -30,7 +32,7 @@ win32 {
     LIBS += -lws2_32
 }
 
-// CONFIG += precompiled_header
+CONFIG += precompiled_header
 
 PRECOMPILED_HEADER = pch.h
 

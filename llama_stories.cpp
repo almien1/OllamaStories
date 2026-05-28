@@ -1,17 +1,21 @@
+#include "pch.h"
 #include "llama_stories.h"
 #include "ui_llama_stories.h"
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QSettings>
 #include <QMessageBox>
-
-#include "ollama-hpp/singleheader/ollama.hpp"
+#include <QTemporaryFile>
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::LlamaStories)
     , m_server(std::make_shared<Ollama>("http://localhost:11434"))
+    , m_settings(std::make_shared<QSettings>(QSettings::NativeFormat, QSettings::UserScope, "LlamaStories", "LlamaStories", this))
+    , m_mru(m_settings)
 {
     ui->setupUi(this);
+    populateMRU();
 
     ui->tabWidget->setCurrentIndex(0);
 
@@ -43,17 +47,23 @@ void LlamaStories::on_actionExit_triggered()
 
 void LlamaStories::on_actionOpenProject_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, "open project", "../../../../LlamaWorkspace", "*.json");
+    QString filename = QFileDialog::getOpenFileName(this, "open project", m_mru.recentDirectory(), "*.json");
     if (!filename.isEmpty())
     {
-        if (m_project.load(filename))
-        {
-            displayLoadedProject();
-        }
-        else
-        {
-            QMessageBox::warning(this, "Could not open project", "Could not open project");
-        }
+        loadProject(filename);
+    }
+}
+
+void LlamaStories::loadProject(const QString &filename)
+{
+    if (m_project.load(filename))
+    {
+        m_mru.newEntry(filename);
+        displayLoadedProject();
+    }
+    else
+    {
+        QMessageBox::warning(this, "Could not open project", "Could not open project");
     }
 }
 
@@ -68,7 +78,7 @@ void LlamaStories::saveProject()
         }
         else
         {
-            QString filename = QFileDialog::getSaveFileName(this, "save project");
+            QString filename = QFileDialog::getSaveFileName(this, "save project", m_mru.recentDirectory(), "*.json");
             if (!filename.isEmpty())
             {
                 fail = !m_project.saveAs(filename);
@@ -100,7 +110,7 @@ void LlamaStories::displayLoadedProject()
 void LlamaStories::displayStoryList()
 {
     ui->listStories->clear();
-    for (QString name : m_project.m_stories.keys())
+    for (const QString &name : m_project.m_stories.keys())
     {
         ui->listStories->addItem(name);
     }
@@ -127,17 +137,23 @@ void LlamaStories::selectStory(const QString &name)
 
 bool LlamaStories::compileProject()
 {
+    bool success = false;
     saveProject();
 
     ui->actionCompile->setEnabled(false);
     ui->actionCompileAndRun->setEnabled(false);
 
-    QString modelFile = R"(C:\Users\user\repos\LlamaWorkspace\Modelfile)";
-    m_project.writeModelfile(modelFile);
-    bool success = m_ai.compileModel(m_project.m_name, modelFile);
+    QTemporaryFile modelFile;
+    if (modelFile.open())
+    {
+        qInfo() << "Using temp file" << modelFile.fileName();
+        // QString modelFile = R"(C:\Users\user\repos\Modelfile)"; // TODO: need a temp file location
+        m_project.writeModelfile(modelFile.fileName());
+        success = m_ai.compileModel(m_project.m_name, modelFile.fileName());
 
-    ui->actionCompile->setEnabled(true);
-    ui->actionCompileAndRun->setEnabled(true);
+        ui->actionCompile->setEnabled(true);
+        ui->actionCompileAndRun->setEnabled(true);
+    }
     return success;
 }
 
@@ -183,6 +199,42 @@ bool LlamaStories::on_receive_response(const ollama::response& response)
 
     // Return true to continue streaming, or false to stop immediately
     return true;
+}
+
+void LlamaStories::populateMRU()
+{
+    QMenu *subMenu = new QMenu("Recent", this);
+
+    m_mruActions.clear();
+    int i = 0;
+    for (const QString &mru : m_mru.m_values)
+    {
+        QAction *mruAction = subMenu->addAction(mru);
+        connect(mruAction, &QAction::triggered, this, [this](int i) { loadMRU(i); });
+
+        m_mruActions.append(mruAction);
+        i++;
+    }
+
+    ui->actionMruMenu->setMenu(subMenu);
+}
+
+void LlamaStories::loadMRU(int i)
+{
+    qInfo() << "Loading MRU" << i;
+    if (i >= 0 && i < m_mruActions.size())
+    {
+        QString filename = m_mruActions[i]->text();
+        qInfo() << "Loading MRU" << filename;
+        if (QFileInfo::exists(filename))
+        {
+            loadProject(filename);
+        }
+        else
+        {
+            QMessageBox::warning(this, "File not reachable", "File not reachable");
+        }
+    }
 }
 
 void LlamaStories::updateModelList()

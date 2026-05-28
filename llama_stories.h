@@ -2,12 +2,12 @@
 #define LLAMA_STORIES_H
 
 #include <QMainWindow>
-#include <QProcess> // just while we figure out where it should go
 #include "story_project.h"
 #include "ollama_cli.h"
+#include "mru_files.h"
 
 class Ollama;
-
+class QSettings;
 class QListWidgetItem;
 
 QT_BEGIN_NAMESPACE
@@ -29,9 +29,9 @@ protected:
 
 private slots:
     // Menu
-    void on_actionExit_triggered();
     void on_actionOpenProject_triggered();
     void on_actionSave_triggered();
+    void on_actionExit_triggered();
 
     // Toolbar
     void on_actionCompileAndRun_triggered();
@@ -59,7 +59,11 @@ private slots:
 
     bool on_receive_response(const ollama::response& response);
 
+    void loadMRU(int i);
+
 private:
+    void populateMRU();
+    void loadProject(const QString &filename);
     void saveProject();
     void displayLoadedProject();
     void displayStoryList();
@@ -76,7 +80,14 @@ private:
     std::shared_ptr<Ollama> m_server;
 
     StoryProject m_project;
+
     OllamaCLI m_ai;
+
+    std::shared_ptr<QSettings> m_settings;
+
+    MruFiles m_mru;
+
+    QVector<QAction *> m_mruActions;
 
 };
 #endif // LLAMA_STORIES_H
