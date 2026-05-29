@@ -18,6 +18,7 @@ LlamaStories::LlamaStories(QWidget *parent)
     populateMRU();
 
     ui->tabWidget->setCurrentIndex(0);
+    ui->storyTab->setCurrentIndex(0);
 
     /*
     if (m_project.load(R"(C:\Users\user\repos\LlamaWorkspace\project.json)"))
@@ -104,6 +105,7 @@ void LlamaStories::displayLoadedProject()
     ui->cmbModel->setEditText(m_project.m_model);
     ui->slideTemp->setValue(m_project.m_temperature * 100);
     ui->slideContext->setValue(m_project.m_context);
+    ui->txtProjectNotes->setText(m_project.m_projectNotes);
     displayStoryList();
 }
 
@@ -142,18 +144,19 @@ bool LlamaStories::compileProject()
 
     ui->actionCompile->setEnabled(false);
     ui->actionCompileAndRun->setEnabled(false);
+    QCoreApplication::processEvents();
 
     QTemporaryFile modelFile;
     if (modelFile.open())
     {
-        qInfo() << "Using temp file" << modelFile.fileName();
-        // QString modelFile = R"(C:\Users\user\repos\Modelfile)"; // TODO: need a temp file location
         m_project.writeModelfile(modelFile.fileName());
         success = m_ai.compileModel(m_project.m_name, modelFile.fileName());
-
-        ui->actionCompile->setEnabled(true);
-        ui->actionCompileAndRun->setEnabled(true);
     }
+
+    ui->actionCompile->setEnabled(true);
+    ui->actionCompileAndRun->setEnabled(true);
+    QCoreApplication::processEvents();
+
     return success;
 }
 
@@ -341,5 +344,10 @@ void LlamaStories::on_listStories_itemPressed(QListWidgetItem *item)
     m_project.m_selectedStory = item->text();
 
     displaySelectedStory();
+}
+
+void LlamaStories::on_txtProjectNotes_textChanged()
+{
+    m_project.m_projectNotes = ui->txtProjectNotes->toPlainText();
 }
 

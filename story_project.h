@@ -30,7 +30,8 @@ public:
     QString m_model;
     double m_temperature;
     int m_context; // number of tokens to remember
-    QString m_globalPrompt;
+    QString m_globalPrompt; // a system prompt that applies to all story prompts
+    QString m_projectNotes; // notes about the whole project or system
 
 };
 

@@ -23,6 +23,9 @@ bool StoryProject::load(const QString &filename)
             m_context = json.value("context_size").toInt(16384);
             m_globalPrompt = json.value("global_prompt").toString("");
             m_selectedStory = json.value("current").toString("");
+            m_projectNotes = json.value("project_notes").toString("");
+
+            m_stories.clear();
             QJsonValue stories = json.value("stories");
             if (stories.isObject())
             {
@@ -56,6 +59,7 @@ bool StoryProject::saveAs(const QString &filename)
         json.insert("temperature", m_temperature);
         json.insert("context_size", m_context);
         json.insert("current", m_selectedStory);
+        json.insert("project_notes", m_projectNotes);
         QJsonObject stories;
         for (const auto &name : m_stories.keys())
         {

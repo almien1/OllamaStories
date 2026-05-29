@@ -53,6 +53,9 @@ private slots:
     void on_slideTemp_valueChanged(int value);
     void on_slideContext_valueChanged(int value);
 
+    // Notes
+    void on_txtProjectNotes_textChanged();
+
     // Interactive
     void on_pushButton_clicked();
 
@@ -60,6 +63,7 @@ private slots:
     bool on_receive_response(const ollama::response& response);
 
     void loadMRU(int i);
+
 
 private:
     void populateMRU();
