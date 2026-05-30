@@ -25,7 +25,7 @@ private:
     QString m_partialResponse;
     QString m_model;
     ollama::messages m_messageQueue;
-    ollama::messages m_options;
+    ollama::options m_options;
     std::shared_ptr<Ollama> m_ollama;
     bool m_cancelled = false;
 };

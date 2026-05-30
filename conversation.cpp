@@ -1,10 +1,9 @@
 #include "conversation.h"
 
-
-
 Conversation::Conversation(const QString &model, const QString &systemPrompt, const QString &firstMessage, QObject *parent) :
     QObject(parent),
-    m_model(model)
+    m_model(model),
+    m_ollama(std::make_shared<Ollama>())
 {
     m_messageQueue.push_back(ollama::message("system", systemPrompt.toStdString()));
     m_messageQueue.push_back(ollama::message("user", firstMessage.toStdString()));
@@ -12,7 +11,7 @@ Conversation::Conversation(const QString &model, const QString &systemPrompt, co
 
 void Conversation::start()
 {
-
+    doChat();
 }
 
 void Conversation::sendMessage(QString message)

@@ -17,7 +17,6 @@ HEADERS += \
     conversation.h \
     llama_stories.h \
     ollama_cli.h \
-    pch.h \
     story_project.h
 
 FORMS += \
@@ -34,7 +33,7 @@ win32 {
 
 CONFIG += precompiled_header
 
-PRECOMPILED_HEADER = pch.h
+PRECOMPILED_HEADER =
 
 DISTFILES += \
     notes.md \
