@@ -46,6 +46,6 @@ void Conversation::doChat()
         return true;
     };
 
-    m_ollama->chat(m_model.toStdString(), m_messageQueue, callback, m_options);
+    m_ollama->chat((m_model + ":latest").toStdString(), m_messageQueue, callback, m_options);
 
 }

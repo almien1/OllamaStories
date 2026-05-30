@@ -165,7 +165,7 @@ void LlamaStories::run()
     ui->tabWidget->setCurrentIndex(3);
     QCoreApplication::processEvents();
 
-    Conversation *worker = new Conversation(m_project.m_name, "", "hello", this);
+    Conversation *worker = new Conversation(m_project.m_name, "", "hello, who are you?", this);
     m_conversationThread = new QThread(this);
     worker->moveToThread(m_conversationThread);
 
@@ -269,7 +269,7 @@ void LlamaStories::showQuestion(QString text)
 {
     ui->txtRunOutput->moveCursor(QTextCursor::End);
     ui->txtRunOutput->insertPlainText(text);
-     ui->txtRunOutput->insertPlainText("\n\n-- sending question --");
+     ui->txtRunOutput->insertPlainText("\n\n-- sending question --\n\n");
     QCoreApplication::processEvents();
 }
 
@@ -283,7 +283,7 @@ void LlamaStories::partialText(QString text)
 void LlamaStories::responseFinished()
 {
     ui->txtRunOutput->moveCursor(QTextCursor::End);
-    ui->txtRunOutput->insertPlainText("\n\n-- end of response --");
+    ui->txtRunOutput->insertPlainText("\n\n-- end of response --\n\n");
     QCoreApplication::processEvents();
 }
 
