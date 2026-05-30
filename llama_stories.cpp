@@ -15,17 +15,9 @@ LlamaStories::LlamaStories(QWidget *parent)
     , m_mru(m_settings)
 {
     ui->setupUi(this);
-    populateMRU();
 
     ui->tabWidget->setCurrentIndex(0);
     ui->storyTab->setCurrentIndex(0);
-
-    /*
-    if (m_project.load(R"(C:\Users\user\repos\LlamaWorkspace\project.json)"))
-    {
-        displayLoadedProject();
-    }
-    */
 
     updateModelList();
 }
@@ -100,13 +92,13 @@ void LlamaStories::on_actionSave_triggered()
 void LlamaStories::displayLoadedProject()
 {
     ui->txtProjectName->setText(m_project.m_name);
-    ui->txtStoryPrompt->setText(m_project.m_stories.value(m_project.m_selectedStory));
     ui->txtGlobalPrompt->setText(m_project.m_globalPrompt);
     ui->cmbModel->setEditText(m_project.m_model);
     ui->slideTemp->setValue(m_project.m_temperature * 100);
     ui->slideContext->setValue(m_project.m_context);
     ui->txtProjectNotes->setText(m_project.m_projectNotes);
     displayStoryList();
+    displaySelectedStory();
 }
 
 void LlamaStories::displayStoryList()
@@ -120,7 +112,8 @@ void LlamaStories::displayStoryList()
 
 void LlamaStories::displaySelectedStory()
 {
-    ui->txtStoryPrompt->setText(m_project.m_stories.value(m_project.m_selectedStory));
+    ui->txtStoryPrompt->setText(m_project.m_stories.value(m_project.m_selectedStory).prompt);
+    ui->txtStoryNotes->setText(m_project.m_stories.value(m_project.m_selectedStory).notes);
 }
 
 void LlamaStories::selectStory(const QString &name)
@@ -204,24 +197,6 @@ bool LlamaStories::on_receive_response(const ollama::response& response)
     return true;
 }
 
-void LlamaStories::populateMRU()
-{
-    QMenu *subMenu = new QMenu("Recent", this);
-
-    m_mruActions.clear();
-    int i = 0;
-    for (const QString &mru : m_mru.m_values)
-    {
-        QAction *mruAction = subMenu->addAction(mru);
-        connect(mruAction, &QAction::triggered, this, [this](int i) { loadMRU(i); });
-
-        m_mruActions.append(mruAction);
-        i++;
-    }
-
-    ui->actionMruMenu->setMenu(subMenu);
-}
-
 void LlamaStories::loadMRU(int i)
 {
     qInfo() << "Loading MRU" << i;
@@ -260,7 +235,7 @@ void LlamaStories::on_txtStoryPrompt_textChanged()
 {
     if (!m_project.m_selectedStory.isEmpty())
     {
-        m_project.m_stories[m_project.m_selectedStory] = ui->txtStoryPrompt->toPlainText();
+        m_project.m_stories[m_project.m_selectedStory].prompt = ui->txtStoryPrompt->toPlainText();
     }
 }
 
@@ -318,7 +293,7 @@ void LlamaStories::on_pushButton_clicked()
 void LlamaStories::on_btnNewStory_clicked()
 {
     QString name = QInputDialog::getText(this, "New story", "Story name");
-    m_project.m_stories.insert(name, "");
+    m_project.m_stories.insert(name, StoryProject::Story());
     displayStoryList();
     selectStory(name);
     displaySelectedStory();
@@ -332,7 +307,7 @@ void LlamaStories::on_btnDeleteStory_clicked()
         displayStoryList();
         if (!m_project.m_stories.isEmpty())
         {
-            m_project.m_selectedStory =  m_project.m_stories.first();
+            m_project.m_selectedStory = m_project.m_stories.firstKey();
             displaySelectedStory();
         }
     }

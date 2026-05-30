@@ -66,7 +66,6 @@ private slots:
 
 
 private:
-    void populateMRU();
     void loadProject(const QString &filename);
     void saveProject();
     void displayLoadedProject();

@@ -21,7 +21,8 @@ public:
     bool m_dirty = true;
     QString m_filename;
 
-    using Stories = QMap<QString , QString>; // name, prompt
+    using Story = struct{QString prompt; QString notes;};
+    using Stories = QMap<QString , Story>;
 
     // Settings
     QString m_name; // model name within ollama

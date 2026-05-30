@@ -32,7 +32,23 @@ bool StoryProject::load(const QString &filename)
                 QJsonObject storiesobj = stories.toObject();
                 for (auto name : storiesobj.keys())
                 {
-                    m_stories.insert(name, storiesobj.value(name).toString());
+                    QJsonValue storyJson = storiesobj.value(name);
+                    if (storyJson.isString())
+                    {
+                        // original format
+                        Story story;
+                        story.prompt = storyJson.toString();
+                        m_stories.insert(name, story);
+                    }
+                    else
+                    {
+                        // original format
+                        Story story;
+                        story.prompt = storyJson.toObject().value("prompt").toString();
+                        story.notes = storyJson.toObject().value("notes").toString();
+                        m_stories.insert(name, story);
+
+                    }
                 }
             }
             m_filename = filename;
@@ -63,7 +79,10 @@ bool StoryProject::saveAs(const QString &filename)
         QJsonObject stories;
         for (const auto &name : m_stories.keys())
         {
-            stories.insert(name, m_stories.value(name));
+            QJsonObject story;
+            story.insert("prompt", m_stories.value(name).prompt);
+            story.insert("notes", m_stories.value(name).notes);
+            stories.insert(name, story);
         }
         json.insert("stories", stories);
 
@@ -96,7 +115,7 @@ QString StoryProject::asModelfile() const
     lines.append(QString("PARAMETER num_ctx %1").arg(m_context));
 
     lines.append(R"(SYSTEM """)");
-    lines.append(m_stories[m_selectedStory].split("\n"));
+    lines.append(m_stories[m_selectedStory].prompt.split("\n"));
     lines.append("");
     lines.append(m_globalPrompt.split("\n"));
     lines.append(R"(""")");
