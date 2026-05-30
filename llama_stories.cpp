@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "llama_stories.h"
 #include "ui_llama_stories.h"
 #include <QFileDialog>
@@ -159,30 +158,27 @@ bool LlamaStories::compileProject()
 
 void LlamaStories::run()
 {
+    if (m_conversationThread != nullptr)
+    {
+        // TODO kill the old one
+    }
     ui->tabWidget->setCurrentIndex(3);
     QCoreApplication::processEvents();
 
-    if ((m_conversationThread != nullptr) && m_conversationThread->isRunning())
-    {
-        // TODO: send signal
-    }
-    else
-    {
-        Conversation *worker = new Conversation(m_project.m_model, "", "hello", this);
-        m_conversationThread = new QThread(this);
-        worker->moveToThread(m_conversationThread);
+    Conversation *worker = new Conversation(m_project.m_name, "", "hello", this);
+    m_conversationThread = new QThread(this);
+    worker->moveToThread(m_conversationThread);
 
-        connect(worker, &Conversation::partialText, this, [this](QString text){partialText(text);});
-        connect(worker, &Conversation::responseFinished, this, [this](){responseFinished();});
+    connect(worker, &Conversation::partialText, this, [this](QString text){partialText(text);});
+    connect(worker, &Conversation::responseFinished, this, [this](){responseFinished();});
 
-        connect(m_conversationThread, &QThread::started, worker, &Conversation::start);
+    connect(m_conversationThread, &QThread::started, worker, &Conversation::start);
 
-        connect(m_conversationThread, &QThread::finished, worker, &QObject::deleteLater);
-        connect(m_conversationThread, &QThread::finished, m_conversationThread, &QObject::deleteLater);
-        connect(this, &QObject::destroyed, m_conversationThread, &QThread::quit);
-
-        m_conversationThread->start();
-    }
+    connect(m_conversationThread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(m_conversationThread, &QThread::finished, m_conversationThread, &QObject::deleteLater);
+    connect(this, &QObject::destroyed, m_conversationThread, &QThread::quit);
+    connect(this, &LlamaStories::sendMessage, worker, &Conversation::sendMessage);
+    m_conversationThread->start();
 
 }
 
@@ -256,8 +252,25 @@ void LlamaStories::on_Run_triggered()
 
 void LlamaStories::on_pushButton_clicked()
 {
+    if ((m_conversationThread != nullptr) && m_conversationThread->isRunning())
+    {
+        QString question = ui->txtRunInput->toPlainText();
+        showQuestion(question);
 
-// todo emit ui->txtRunInput->toPlainText()
+        emit sendMessage(question);
+    }
+    else
+    {
+        QMessageBox::information(this, "no conversation", "Need to run first");
+    }
+}
+
+void LlamaStories::showQuestion(QString text)
+{
+    ui->txtRunOutput->moveCursor(QTextCursor::End);
+    ui->txtRunOutput->insertPlainText(text);
+     ui->txtRunOutput->insertPlainText("\n\n-- sending question --");
+    QCoreApplication::processEvents();
 }
 
 void LlamaStories::partialText(QString text)
@@ -269,7 +282,9 @@ void LlamaStories::partialText(QString text)
 
 void LlamaStories::responseFinished()
 {
-
+    ui->txtRunOutput->moveCursor(QTextCursor::End);
+    ui->txtRunOutput->insertPlainText("\n\n-- end of response --");
+    QCoreApplication::processEvents();
 }
 
 void LlamaStories::on_btnNewStory_clicked()

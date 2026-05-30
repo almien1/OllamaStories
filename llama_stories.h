@@ -24,8 +24,18 @@ public:
     explicit LlamaStories(QWidget *parent = nullptr);
     ~LlamaStories() override;
 
+public slots:
+    // Interactons with m_conversationThread
+    void partialText(QString text);
+    void responseFinished();
+    void showQuestion(QString text);
+
+signals:
+    void sendMessage(QString text);
+
 protected:
     void closeEvent(QCloseEvent *event) override;
+
 
 private slots:
     // Menu
@@ -59,11 +69,6 @@ private slots:
 
     // Interactive
     void on_pushButton_clicked();
-
-
-    // Interactons with m_conversationThread
-    void partialText(QString text);
-    void responseFinished();
 
 private:
     void loadProject(const QString &filename);
