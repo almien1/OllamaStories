@@ -42,7 +42,7 @@
        <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="systemPromptTab">
        <attribute name="title">
@@ -426,7 +426,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <string>File</string>
     </property>
     <addaction name="actionOpenProject"/>
-    <addaction name="actionMruMenu"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>

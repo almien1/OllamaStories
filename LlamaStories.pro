@@ -7,15 +7,15 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    conversation.cpp \
     main.cpp \
     llama_stories.cpp \
-    mru_files.cpp \
     ollama_cli.cpp \
     story_project.cpp
 
 HEADERS += \
+    conversation.h \
     llama_stories.h \
-    mru_files.h \
     ollama_cli.h \
     pch.h \
     story_project.h

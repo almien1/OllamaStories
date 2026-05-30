@@ -2,9 +2,9 @@
 #define LLAMA_STORIES_H
 
 #include <QMainWindow>
+#include <QThread>
 #include "story_project.h"
 #include "ollama_cli.h"
-#include "mru_files.h"
 
 class Ollama;
 class QSettings;
@@ -40,6 +40,7 @@ private slots:
 
     // Main editor
     void on_txtStoryPrompt_textChanged();
+    void on_txtStoryNotes_textChanged();
     void on_listStories_itemPressed(QListWidgetItem *item);
     void on_btnNewStory_clicked();
     void on_btnDeleteStory_clicked();
@@ -60,10 +61,9 @@ private slots:
     void on_pushButton_clicked();
 
 
-    bool on_receive_response(const ollama::response& response);
-
-    void loadMRU(int i);
-
+    // Interactons with m_conversationThread
+    void partialText(QString text);
+    void responseFinished();
 
 private:
     void loadProject(const QString &filename);
@@ -72,6 +72,7 @@ private:
     void displayStoryList();
     void displaySelectedStory();
     void selectStory(const QString &name);
+    QString projectDirectory();
 
     bool compileProject();
     void run();
@@ -80,15 +81,12 @@ private:
 
     Ui::LlamaStories *ui;
 
-    std::shared_ptr<Ollama> m_server;
-
     StoryProject m_project;
 
     OllamaCLI m_ai;
+    QThread *m_conversationThread = nullptr;
 
     std::shared_ptr<QSettings> m_settings;
-
-    MruFiles m_mru;
 
     QVector<QAction *> m_mruActions;
 

@@ -6,13 +6,12 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QTemporaryFile>
+#include "conversation.h"
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::LlamaStories)
-    , m_server(std::make_shared<Ollama>("http://localhost:11434"))
     , m_settings(std::make_shared<QSettings>(QSettings::NativeFormat, QSettings::UserScope, "LlamaStories", "LlamaStories", this))
-    , m_mru(m_settings)
 {
     ui->setupUi(this);
 
@@ -40,7 +39,7 @@ void LlamaStories::on_actionExit_triggered()
 
 void LlamaStories::on_actionOpenProject_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, "open project", m_mru.recentDirectory(), "*.json");
+    QString filename = QFileDialog::getOpenFileName(this, "open project", projectDirectory(), "*.json");
     if (!filename.isEmpty())
     {
         loadProject(filename);
@@ -51,7 +50,7 @@ void LlamaStories::loadProject(const QString &filename)
 {
     if (m_project.load(filename))
     {
-        m_mru.newEntry(filename);
+        m_settings->setValue("recent_directory", QFileInfo(filename).dir().absolutePath());
         displayLoadedProject();
     }
     else
@@ -71,7 +70,7 @@ void LlamaStories::saveProject()
         }
         else
         {
-            QString filename = QFileDialog::getSaveFileName(this, "save project", m_mru.recentDirectory(), "*.json");
+            QString filename = QFileDialog::getSaveFileName(this, "save project", projectDirectory(), "*.json");
             if (!filename.isEmpty())
             {
                 fail = !m_project.saveAs(filename);
@@ -130,6 +129,11 @@ void LlamaStories::selectStory(const QString &name)
     }
 }
 
+QString LlamaStories::projectDirectory()
+{
+    return m_settings->value("recent_directory").toString();
+}
+
 bool LlamaStories::compileProject()
 {
     bool success = false;
@@ -155,78 +159,35 @@ bool LlamaStories::compileProject()
 
 void LlamaStories::run()
 {
-    if (m_server->is_running())
-    {
-        ui->tabWidget->setCurrentIndex(3);
-        QCoreApplication::processEvents();
-
-        //auto response = m_server->generate(m_project.m_name.toStdString(), "Hello?");
-        //ui->txtRunOutput->setPlainText(QString::fromStdString(response.as_json_string()));
-
-        std::function<bool(const ollama::response&)> response_callback = std::bind(
-            &LlamaStories::on_receive_response,
-            this,
-            std::placeholders::_1
-            );
-
-        ollama::message message("user", "Hello?");
-
-        ollama::options options; //["seed"], ["temperature"], ["num_predict"]
-
-        ollama::chat(m_project.m_name.toStdString(), message, response_callback, options);
-
-
-    }
-
-}
-
-bool LlamaStories::on_receive_response(const ollama::response& response)
-{
-    //if (response.as_json()["done"]==true) std::cout << std::endl;
-
-    QString newText = QString::fromStdString(response.as_simple_string());
-
-    // This would add a newline every time
-    // ui->txtRunOutput->append(newText);
-
-    ui->txtRunOutput->moveCursor(QTextCursor::End);
-    ui->txtRunOutput->insertPlainText(newText);
+    ui->tabWidget->setCurrentIndex(3);
     QCoreApplication::processEvents();
 
-    // Return true to continue streaming, or false to stop immediately
-    return true;
-}
-
-void LlamaStories::loadMRU(int i)
-{
-    qInfo() << "Loading MRU" << i;
-    if (i >= 0 && i < m_mruActions.size())
+    if ((m_conversationThread != nullptr) && m_conversationThread->isRunning())
     {
-        QString filename = m_mruActions[i]->text();
-        qInfo() << "Loading MRU" << filename;
-        if (QFileInfo::exists(filename))
-        {
-            loadProject(filename);
-        }
-        else
-        {
-            QMessageBox::warning(this, "File not reachable", "File not reachable");
-        }
+        // TODO: send signal
     }
+    else
+    {
+        Conversation *worker = new Conversation(m_project.m_model, "", "hello", this);
+        m_conversationThread = new QThread(this);
+        worker->moveToThread(m_conversationThread);
+
+        connect(worker, &Conversation::partialText, this, [this](QString text){partialText(text);});
+        connect(worker, &Conversation::responseFinished, this, [this](){responseFinished();});
+
+        connect(m_conversationThread, &QThread::started, worker, &Conversation::start);
+
+        connect(m_conversationThread, &QThread::finished, worker, &QObject::deleteLater);
+        connect(m_conversationThread, &QThread::finished, m_conversationThread, &QObject::deleteLater);
+        connect(this, &QObject::destroyed, m_conversationThread, &QThread::quit);
+
+        m_conversationThread->start();
+    }
+
 }
 
 void LlamaStories::updateModelList()
 {
-
-    if (m_server->is_running())
-    {
-        ui->cmbModel->clear();
-        for (const auto &model : m_server->list_models())
-        {
-            ui->cmbModel->addItem(QString::fromStdString(model));
-        }
-        ui->cmbModel->setCurrentText(m_project.m_model);
-    }
 
 }
 
@@ -238,6 +199,15 @@ void LlamaStories::on_txtStoryPrompt_textChanged()
         m_project.m_stories[m_project.m_selectedStory].prompt = ui->txtStoryPrompt->toPlainText();
     }
 }
+
+void LlamaStories::on_txtStoryNotes_textChanged()
+{
+    if (!m_project.m_selectedStory.isEmpty())
+    {
+        m_project.m_stories[m_project.m_selectedStory].notes = ui->txtStoryNotes->toPlainText();
+    }
+}
+
 
 void LlamaStories::on_txtGlobalPrompt_textChanged()
 {
@@ -287,7 +257,19 @@ void LlamaStories::on_Run_triggered()
 void LlamaStories::on_pushButton_clicked()
 {
 
-    // TODO; talk
+// todo emit ui->txtRunInput->toPlainText()
+}
+
+void LlamaStories::partialText(QString text)
+{
+    ui->txtRunOutput->moveCursor(QTextCursor::End);
+    ui->txtRunOutput->insertPlainText(text);
+    QCoreApplication::processEvents();
+}
+
+void LlamaStories::responseFinished()
+{
+
 }
 
 void LlamaStories::on_btnNewStory_clicked()
