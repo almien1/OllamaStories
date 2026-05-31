@@ -5,7 +5,10 @@ Conversation::Conversation(const QString &model, const QString &systemPrompt, co
     m_model(model),
     m_ollama(std::make_shared<Ollama>())
 {
-    m_messageQueue.push_back(ollama::message("system", systemPrompt.toStdString()));
+    if (!systemPrompt.isEmpty())
+    {
+        m_messageQueue.push_back(ollama::message("system", systemPrompt.toStdString()));
+    }
     m_messageQueue.push_back(ollama::message("user", firstMessage.toStdString()));
 }
 
@@ -46,6 +49,6 @@ void Conversation::doChat()
         return true;
     };
 
-    m_ollama->chat((m_model + ":latest").toStdString(), m_messageQueue, callback, m_options);
+    m_ollama->chat(m_model.toStdString(), m_messageQueue, callback, m_options);
 
 }

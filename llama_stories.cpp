@@ -162,10 +162,11 @@ void LlamaStories::run()
     {
         // TODO kill the old one
     }
+    ui->txtRunOutput->clear();
     ui->tabWidget->setCurrentIndex(3);
     QCoreApplication::processEvents();
 
-    Conversation *worker = new Conversation(m_project.m_name, "", "hello, who are you?", this);
+    Conversation *worker = new Conversation(m_project.m_name, "", "hello, who are you?", nullptr); // no parent because we will call moveToThread
     m_conversationThread = new QThread(this);
     worker->moveToThread(m_conversationThread);
 
