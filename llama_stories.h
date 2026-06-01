@@ -30,6 +30,9 @@ public slots:
     void responseFinished();
     void showQuestion(QString text);
 
+    // Custom textbox for input
+    void enterPressed();
+
 signals:
     void sendMessage(QString text);
 
@@ -83,6 +86,7 @@ private:
 
     bool compileProject();
     void run();
+    void sendInput();
 
     void updateModelList();
 

@@ -8,6 +8,7 @@
 #include <QProcess>
 #include <QTemporaryFile>
 #include "conversation.h"
+#include "input_editbox.h"
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
@@ -19,6 +20,7 @@ LlamaStories::LlamaStories(QWidget *parent)
     ui->tabWidget->setCurrentIndex(0);
     ui->storyTab->setCurrentIndex(0);
 
+    connect(ui->txtRunInput, &InputEditbox::enterPressed, this, &LlamaStories::enterPressed);
     updateModelList();
 }
 
@@ -253,12 +255,19 @@ void LlamaStories::on_Run_triggered()
     run();
 }
 
-void LlamaStories::on_pushButton_clicked()
+void LlamaStories::enterPressed()
+{
+    sendInput();
+}
+
+void LlamaStories::sendInput()
 {
     if ((m_conversationThread != nullptr) && m_conversationThread->isRunning())
     {
         QString question = ui->txtRunInput->toPlainText();
         showQuestion(question);
+        ui->txtRunInput->clear();
+        QCoreApplication::processEvents();
 
         emit sendMessage(question);
     }
@@ -268,6 +277,11 @@ void LlamaStories::on_pushButton_clicked()
     }
 }
 
+void LlamaStories::on_pushButton_clicked()
+{
+    sendInput();
+}
+
 void LlamaStories::showQuestion(QString text)
 {
     ui->txtRunOutput->moveCursor(QTextCursor::End);
@@ -275,6 +289,7 @@ void LlamaStories::showQuestion(QString text)
      ui->txtRunOutput->insertPlainText("\n\n-- sending question --\n\n");
     QCoreApplication::processEvents();
 }
+
 
 void LlamaStories::partialText(QString text)
 {

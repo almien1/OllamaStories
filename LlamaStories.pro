@@ -8,6 +8,7 @@ CONFIG += c++17
 
 SOURCES += \
     conversation.cpp \
+    input_editbox.cpp \
     main.cpp \
     llama_stories.cpp \
     ollama_cli.cpp \
@@ -15,6 +16,7 @@ SOURCES += \
 
 HEADERS += \
     conversation.h \
+    input_editbox.h \
     llama_stories.h \
     ollama_cli.h \
     pch.h \

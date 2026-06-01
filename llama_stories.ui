@@ -318,7 +318,7 @@
        <attribute name="title">
         <string>Run</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,0,1">
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,1">
         <property name="spacing">
          <number>3</number>
         </property>
@@ -364,14 +364,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
-          <property name="text">
-           <string>PushButton</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPlainTextEdit" name="txtRunInput">
+         <widget class="InputEditbox" name="txtRunInput">
           <property name="font">
            <font>
             <family>Consolas</family>
@@ -447,10 +440,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionCompile"/>
-   <addaction name="actionCompileAndRun"/>
+   <addaction name="actionOpenInTerminal"/>
    <addaction name="Run"/>
    <addaction name="actionRestart"/>
-   <addaction name="actionOpenInTerminal"/>
   </widget>
   <action name="actionOpenProject">
    <property name="text">
@@ -528,13 +520,37 @@ li.checked::marker { content: &quot;\2612&quot;; }
   </action>
   <action name="actionOpenInTerminal">
    <property name="text">
-    <string>Terminal</string>
+    <string>Run detached</string>
+   </property>
+   <property name="toolTip">
+    <string>Run the current story in a separate window</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy the selected story and the global prompt together, ready for pasting into a website chat</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InputEditbox</class>
+   <extends>QPlainTextEdit</extends>
+   <header>input_editbox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
