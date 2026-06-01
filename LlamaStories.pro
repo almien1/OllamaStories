@@ -36,6 +36,7 @@ CONFIG += precompiled_header
 
 PRECOMPILED_HEADER = pch.h
 
+
 DISTFILES += \
     notes.md \
     readme.md

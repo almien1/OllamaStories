@@ -450,6 +450,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <addaction name="actionCompileAndRun"/>
    <addaction name="Run"/>
    <addaction name="actionRestart"/>
+   <addaction name="actionOpenInTerminal"/>
   </widget>
   <action name="actionOpenProject">
    <property name="text">
@@ -525,9 +526,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
-  <action name="actionMruMenu">
+  <action name="actionOpenInTerminal">
    <property name="text">
-    <string>&amp;Recent</string>
+    <string>Terminal</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

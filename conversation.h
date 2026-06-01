@@ -2,7 +2,6 @@
 #define CONVERSATION_H
 #include <QObject>
 #include <memory>
-#include "ollama-hpp/singleheader/ollama.hpp"
 
 class Conversation : public QObject
 {

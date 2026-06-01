@@ -70,6 +70,8 @@ private slots:
     // Interactive
     void on_pushButton_clicked();
 
+    void on_actionOpenInTerminal_triggered();
+
 private:
     void loadProject(const QString &filename);
     void saveProject();

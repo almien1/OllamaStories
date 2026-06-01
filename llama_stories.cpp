@@ -4,6 +4,8 @@
 #include <QInputDialog>
 #include <QSettings>
 #include <QMessageBox>
+#include <QDesktopServices>
+#include <QProcess>
 #include <QTemporaryFile>
 #include "conversation.h"
 
@@ -96,6 +98,7 @@ void LlamaStories::displayLoadedProject()
     ui->slideContext->setValue(m_project.m_context);
     ui->txtProjectNotes->setText(m_project.m_projectNotes);
     displayStoryList();
+    selectStory(m_project.m_selectedStory);
     displaySelectedStory();
 }
 
@@ -187,7 +190,6 @@ void LlamaStories::updateModelList()
 {
 
 }
-
 
 void LlamaStories::on_txtStoryPrompt_textChanged()
 {
@@ -322,5 +324,11 @@ void LlamaStories::on_listStories_itemPressed(QListWidgetItem *item)
 void LlamaStories::on_txtProjectNotes_textChanged()
 {
     m_project.m_projectNotes = ui->txtProjectNotes->toPlainText();
+}
+
+void LlamaStories::on_actionOpenInTerminal_triggered()
+{
+    QStringList args = {"/c", "start", "cmd.exe", "/K", "ollama", "run", "--hidethinking", m_project.m_name};
+    QProcess::startDetached("cmd.exe", args);
 }
 
