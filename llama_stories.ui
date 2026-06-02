@@ -419,10 +419,22 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <string>File</string>
     </property>
     <addaction name="actionOpenProject"/>
+    <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionCopy"/>
+    <addaction name="separator"/>
+    <addaction name="actionCompile"/>
+    <addaction name="Run"/>
+    <addaction name="actionOpenInTerminal"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTools"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -445,11 +457,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <addaction name="actionRestart"/>
   </widget>
   <action name="actionOpenProject">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
    <property name="text">
     <string>&amp;Open Project</string>
    </property>
   </action>
   <action name="actionExit">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ApplicationExit"/>
+   </property>
    <property name="text">
     <string>E&amp;xit</string>
    </property>
@@ -481,7 +499,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>Save Project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -519,19 +537,28 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
   </action>
   <action name="actionOpenInTerminal">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::WindowNew"/>
+   </property>
    <property name="text">
     <string>Run detached</string>
    </property>
    <property name="toolTip">
     <string>Run the current story in a separate window</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionCopy">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+   </property>
    <property name="text">
-    <string>Copy</string>
+    <string>Copy selected prompt</string>
    </property>
    <property name="toolTip">
     <string>Copy the selected story and the global prompt together, ready for pasting into a website chat</string>

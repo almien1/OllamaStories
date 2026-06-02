@@ -16,6 +16,12 @@
   
 This generates a new model with your prompt that will be visible in `ollama list` and can be run using `ollama run story` (if you used story as the name)
 
+Now you can run the prompt
+
+- 'Run' (Ctrl-R) will run Ollama inside the editor
+- 'Run detached' (Ctrl-T) will open a command line window and run your ollama project interactively there
+- Ctrl-C will copy the story and the global prompt into the clipboard, and could be pasted into a LLM website chat window
+
 ## Multiple stories
 
 Perhaps you have a successful prompt and would like to explore themes around that idea
@@ -25,5 +31,7 @@ Move the "common" part of your prompt into the Global tab, leaving just the them
 Then create another story with a different theme.
 
 The 'Compile' button will combine your selected story with the global prompt.
+
+
 
 

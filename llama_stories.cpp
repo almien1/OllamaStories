@@ -7,6 +7,7 @@
 #include <QDesktopServices>
 #include <QProcess>
 #include <QTemporaryFile>
+#include <QClipboard>
 #include "conversation.h"
 #include "input_editbox.h"
 
@@ -117,6 +118,7 @@ void LlamaStories::displaySelectedStory()
 {
     ui->txtStoryPrompt->setText(m_project.m_stories.value(m_project.m_selectedStory).prompt);
     ui->txtStoryNotes->setText(m_project.m_stories.value(m_project.m_selectedStory).notes);
+    ui->storyTab->setCurrentIndex(0);
 }
 
 void LlamaStories::selectStory(const QString &name)
@@ -277,11 +279,6 @@ void LlamaStories::sendInput()
     }
 }
 
-void LlamaStories::on_pushButton_clicked()
-{
-    sendInput();
-}
-
 void LlamaStories::showQuestion(QString text)
 {
     ui->txtRunOutput->moveCursor(QTextCursor::End);
@@ -345,5 +342,12 @@ void LlamaStories::on_actionOpenInTerminal_triggered()
 {
     QStringList args = {"/c", "start", "cmd.exe", "/K", "ollama", "run", "--hidethinking", m_project.m_name};
     QProcess::startDetached("cmd.exe", args);
+}
+
+
+void LlamaStories::on_actionCopy_triggered()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(ui->txtStoryPrompt->toPlainText() + "\n\n" + ui->txtGlobalPrompt->toPlainText());
 }
 

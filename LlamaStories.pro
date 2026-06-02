@@ -25,6 +25,9 @@ HEADERS += \
 FORMS += \
     llama_stories.ui
 
+DISTFILES += \
+    readme.md
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -39,6 +42,3 @@ CONFIG += precompiled_header
 PRECOMPILED_HEADER = pch.h
 
 
-DISTFILES += \
-    notes.md \
-    readme.md

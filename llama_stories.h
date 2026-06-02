@@ -44,6 +44,8 @@ private slots:
     // Menu
     void on_actionOpenProject_triggered();
     void on_actionSave_triggered();
+    void on_actionCopy_triggered();
+    void on_actionOpenInTerminal_triggered();
     void on_actionExit_triggered();
 
     // Toolbar
@@ -69,11 +71,6 @@ private slots:
 
     // Notes
     void on_txtProjectNotes_textChanged();
-
-    // Interactive
-    void on_pushButton_clicked();
-
-    void on_actionOpenInTerminal_triggered();
 
 private:
     void loadProject(const QString &filename);
