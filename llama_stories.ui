@@ -42,7 +42,7 @@
        <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="systemPromptTab">
        <attribute name="title">
@@ -76,6 +76,13 @@
              <widget class="QToolButton" name="btnNewStory">
               <property name="text">
                <string>New</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="btnRenameStory">
+              <property name="text">
+               <string>Rename</string>
               </property>
              </widget>
             </item>
@@ -167,6 +174,9 @@
                 <family>Consolas</family>
                 <pointsize>11</pointsize>
                </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color:ivory; color:saddlebrown</string>
               </property>
               <property name="acceptRichText">
                <bool>false</bool>

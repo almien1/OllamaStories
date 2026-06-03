@@ -305,10 +305,13 @@ void LlamaStories::responseFinished()
 void LlamaStories::on_btnNewStory_clicked()
 {
     QString name = QInputDialog::getText(this, "New story", "Story name");
-    m_project.m_stories.insert(name, StoryProject::Story());
-    displayStoryList();
-    selectStory(name);
-    displaySelectedStory();
+    if (!name.isEmpty())
+    {
+        m_project.m_stories.insert(name, StoryProject::Story());
+        displayStoryList();
+        selectStory(name);
+        displaySelectedStory();
+    }
 }
 
 void LlamaStories::on_btnDeleteStory_clicked()
@@ -344,10 +347,27 @@ void LlamaStories::on_actionOpenInTerminal_triggered()
     QProcess::startDetached("cmd.exe", args);
 }
 
-
 void LlamaStories::on_actionCopy_triggered()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(ui->txtStoryPrompt->toPlainText() + "\n\n" + ui->txtGlobalPrompt->toPlainText());
+}
+
+void LlamaStories::on_btnRenameStory_clicked()
+{
+    if (m_project.m_stories.contains(m_project.m_selectedStory))
+    {
+        QString name = QInputDialog::getText(this, "Rename story", "New name");
+        if (!name.isEmpty())
+        {
+            m_project.m_stories[name] = m_project.m_stories[m_project.m_selectedStory];
+            m_project.m_stories.remove(m_project.m_selectedStory);
+            m_project.m_selectedStory = name;
+            displayStoryList();
+            selectStory(name);
+            displaySelectedStory();
+        }
+    }
+
 }
 

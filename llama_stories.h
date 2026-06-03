@@ -72,6 +72,8 @@ private slots:
     // Notes
     void on_txtProjectNotes_textChanged();
 
+    void on_btnRenameStory_clicked();
+
 private:
     void loadProject(const QString &filename);
     void saveProject();
