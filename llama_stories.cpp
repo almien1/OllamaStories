@@ -1,15 +1,9 @@
 #include "llama_stories.h"
 #include "ui_llama_stories.h"
-#include <QFileDialog>
-#include <QInputDialog>
-#include <QSettings>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QProcess>
-#include <QTemporaryFile>
-#include <QClipboard>
+
 #include "conversation.h"
 #include "input_editbox.h"
+#include "model_list.h"
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
@@ -23,10 +17,23 @@ LlamaStories::LlamaStories(QWidget *parent)
 
     connect(ui->txtRunInput, &InputEditbox::enterPressed, this, &LlamaStories::enterPressed);
     updateModelList();
+
+    m_storyTimer = new QTimer(this);
+    resetStoryTimer();
+    connect(m_storyTimer, &QTimer::timeout, this, &LlamaStories::storyTimer);
+
 }
 
 LlamaStories::~LlamaStories()
 {
+    if (m_storyTimer && m_storyTimer->isActive())
+    {
+        m_storyTimer->stop();
+    }
+    if (m_conversationThread && m_conversationThread->isRunning())
+    {
+        m_conversationThread->exit(0);
+    }
     delete ui;
 }
 
@@ -167,7 +174,7 @@ void LlamaStories::run()
 {
     if (m_conversationThread != nullptr)
     {
-        // TODO kill the old one
+        m_conversationThread->exit(0);
     }
     ui->txtRunOutput->clear();
     ui->tabWidget->setCurrentIndex(3);
@@ -283,7 +290,7 @@ void LlamaStories::showQuestion(QString text)
 {
     ui->txtRunOutput->moveCursor(QTextCursor::End);
     ui->txtRunOutput->insertPlainText(text);
-     ui->txtRunOutput->insertPlainText("\n\n-- sending question --\n\n");
+     ui->txtRunOutput->insertPlainText("\n\n");
     QCoreApplication::processEvents();
 }
 
@@ -298,7 +305,7 @@ void LlamaStories::partialText(QString text)
 void LlamaStories::responseFinished()
 {
     ui->txtRunOutput->moveCursor(QTextCursor::End);
-    ui->txtRunOutput->insertPlainText("\n\n-- end of response --\n\n");
+    ui->txtRunOutput->insertPlainText("\n\n");
     QCoreApplication::processEvents();
 }
 
@@ -357,7 +364,7 @@ void LlamaStories::on_btnRenameStory_clicked()
 {
     if (m_project.m_stories.contains(m_project.m_selectedStory))
     {
-        QString name = QInputDialog::getText(this, "Rename story", "New name");
+        QString name = QInputDialog::getText(this, "Rename story", "New name", QLineEdit::Normal, m_project.m_selectedStory);
         if (!name.isEmpty())
         {
             m_project.m_stories[name] = m_project.m_stories[m_project.m_selectedStory];
@@ -371,3 +378,104 @@ void LlamaStories::on_btnRenameStory_clicked()
 
 }
 
+void LlamaStories::on_btnTimePlay_pressed()
+{
+    if (m_storyTimer && !m_storyTimer->isActive())
+    {
+        storyTimer();
+        m_storyTimer->start(6000);
+    }
+}
+
+void LlamaStories::on_btnTimePause_pressed()
+{
+    if (m_storyTimer)
+    {
+        m_storyTimer->stop();
+    }
+}
+
+void LlamaStories::on_btnTimeReset_pressed()
+{
+    resetStoryTimer();
+}
+
+void LlamaStories::resetStoryTimer()
+{
+    m_storyTime.setHMS(6,0,0);
+    m_storyDayCount = 1;
+    ui->txtStoryTime->setTime(m_storyTime);
+}
+
+void LlamaStories::storyTimer()
+{
+    const bool debugTimer = false;
+    if ((m_conversationThread != nullptr) && m_conversationThread->isRunning())
+    {
+        QTime oldTime = m_storyTime;
+        m_storyTime = m_storyTime.addSecs(20 * 60);
+
+        ui->txtStoryTime->setTime(m_storyTime);
+
+        if (m_storyTime < oldTime)
+        {
+            m_storyDayCount += 1;
+        }
+
+        QString prompt = QString("It is %1:%2 on day %3 ")
+                             .arg(m_storyTime.hour(), 2, 10, QChar('0'))
+                             .arg(m_storyTime.minute(), 2, 10, QChar('0'))
+                             .arg(m_storyDayCount);
+
+        if (debugTimer)
+        {
+            showQuestion(prompt);
+        }
+
+        emit sendMessage(prompt);
+    }
+
+}
+void LlamaStories::on_btnTimeStep_pressed()
+{
+    // Single step
+    storyTimer();
+}
+
+void LlamaStories::on_btnRefreshModelList_pressed()
+{
+    ModelList *worker = new ModelList();
+    QThread *thread = new QThread(this);
+    worker->moveToThread(thread);
+
+    connect(worker, &ModelList::modelList, this, &LlamaStories::gotModelList);
+
+    connect(thread, &QThread::started, worker, &ModelList::start);
+
+    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    connect(this, &QObject::destroyed, thread, &QThread::quit);
+    thread->start();
+}
+
+void LlamaStories::gotModelList(QStringList models)
+{
+    QString previousModel = ui->cmbModel->currentText();
+    ui->cmbModel->clear();
+    bool foundPrevious = false;
+    models.sort();
+    for (auto & model : models)
+    {
+        ui->cmbModel->addItem(model);
+        if (model == previousModel)
+        {
+            foundPrevious= true;
+        }
+    }
+    if ((!foundPrevious) && (!previousModel.isEmpty()))
+    {
+        QMessageBox::information(this, "Model not found", QString("%1 no longer installed, please choose another").arg(previousModel));
+        // TODO: warning?
+    }
+    ui->cmbModel->setCurrentText(previousModel);
+}

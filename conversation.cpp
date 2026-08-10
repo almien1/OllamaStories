@@ -32,8 +32,12 @@ void Conversation::doChat()
 {
     std::function<bool(const ollama::response&)> callback = [this](const ollama::response&responseObj){
         QString response = QString::fromStdString(responseObj.as_simple_string());
+
         m_partialResponse += response;
-        emit partialText(response);
+        if (!response.trimmed().startsWith("⌀"))
+        {
+            emit partialText(response);
+        }
 
         if (responseObj.as_json()["done"] == true)
         {

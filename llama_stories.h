@@ -1,8 +1,6 @@
 #ifndef LLAMA_STORIES_H
 #define LLAMA_STORIES_H
 
-#include <QMainWindow>
-#include <QThread>
 #include "story_project.h"
 #include "ollama_cli.h"
 
@@ -29,6 +27,8 @@ public slots:
     void partialText(QString text);
     void responseFinished();
     void showQuestion(QString text);
+
+    void gotModelList(QStringList models);
 
     // Custom textbox for input
     void enterPressed();
@@ -66,13 +66,18 @@ private slots:
     // Settings
     void on_txtProjectName_textChanged(const QString &arg1);
     void on_cmbModel_currentTextChanged(const QString &arg1);
+    void on_btnRefreshModelList_pressed();
     void on_slideTemp_valueChanged(int value);
     void on_slideContext_valueChanged(int value);
 
     // Notes
     void on_txtProjectNotes_textChanged();
-
     void on_btnRenameStory_clicked();
+
+    void on_btnTimePlay_pressed();
+    void on_btnTimePause_pressed();
+    void on_btnTimeReset_pressed();
+    void on_btnTimeStep_pressed();
 
 private:
     void loadProject(const QString &filename);
@@ -89,9 +94,16 @@ private:
 
     void updateModelList();
 
+    void resetStoryTimer();
+    void storyTimer();
+
     Ui::LlamaStories *ui;
 
     StoryProject m_project;
+
+    QTimer *m_storyTimer = nullptr;
+    QTime m_storyTime;
+    int m_storyDayCount = 1;
 
     OllamaCLI m_ai;
     QThread *m_conversationThread = nullptr;

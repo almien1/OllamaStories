@@ -20,7 +20,7 @@ WizardStyle=modern dynamic
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\build\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\output\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\Qt6Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
