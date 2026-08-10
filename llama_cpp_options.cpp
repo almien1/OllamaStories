@@ -11,8 +11,6 @@ void LlamaCppOptions::applyRoleplayDefaults()
     topP = 0.95;
     topK = 64;
     minP = 0.05;
-    repeatPenalty = 1.1;
-    repeatLastN = 256;
     flashAttention = true;
 }
 
@@ -49,6 +47,10 @@ QStringList LlamaCppOptions::serverArguments() const
         "--min-p", QString::number(minP),
         "--repeat-penalty", QString::number(repeatPenalty),
         "--repeat-last-n", QString::number(repeatLastN),
+        "--dry-multiplier", QString::number(dryMultiplier),
+        "--dry-base", QString::number(dryBase),
+        "--dry-allowed-length", QString::number(dryAllowedLength),
+        "--dry-penalty-last-n", QString::number(dryPenaltyLastN),
     };
 
     if (flashAttention)
@@ -80,6 +82,10 @@ QStringList LlamaCppOptions::cliArguments(const QString &systemPromptFilePath) c
         "--min-p", QString::number(minP),
         "--repeat-penalty", QString::number(repeatPenalty),
         "--repeat-last-n", QString::number(repeatLastN),
+        "--dry-multiplier", QString::number(dryMultiplier),
+        "--dry-base", QString::number(dryBase),
+        "--dry-allowed-length", QString::number(dryAllowedLength),
+        "--dry-penalty-last-n", QString::number(dryPenaltyLastN),
         "-cnv",
     };
 
@@ -112,8 +118,6 @@ void LlamaCppOptions::load(QSettings &settings)
     topP = settings.value("topP", topP).toDouble();
     topK = settings.value("topK", topK).toInt();
     minP = settings.value("minP", minP).toDouble();
-    repeatPenalty = settings.value("repeatPenalty", repeatPenalty).toDouble();
-    repeatLastN = settings.value("repeatLastN", repeatLastN).toInt();
     flashAttention = settings.value("flashAttention", flashAttention).toBool();
     settings.endGroup();
 }
@@ -132,8 +136,6 @@ void LlamaCppOptions::save(QSettings &settings) const
     settings.setValue("topP", topP);
     settings.setValue("topK", topK);
     settings.setValue("minP", minP);
-    settings.setValue("repeatPenalty", repeatPenalty);
-    settings.setValue("repeatLastN", repeatLastN);
     settings.setValue("flashAttention", flashAttention);
     settings.endGroup();
 }

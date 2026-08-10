@@ -56,8 +56,26 @@ public:
     double topP = 0.95;
     int topK = 64;
     double minP = 0.05;
-    double repeatPenalty = 1.1;
-    int repeatLastN = 256;
+
+    // Everything below is deliberately not user-configurable: these are a
+    // matched pair of repetition controls sized from the shape of a roleplay
+    // turn (a few paragraphs from the model, one from the user, ~400-650
+    // tokens), not values someone should need to hand-tune per model.
+    //
+    // repeatPenalty/repeatLastN are mild and short-range - just enough to
+    // stop the model getting stuck stuttering on a single token. DRY handles
+    // phrase-level repetition (whole recurring sentences/openers) instead:
+    // it only penalizes actual repeated multi-token *sequences* (broken by
+    // the default sequence breakers: newline, ':', '"', '*'), never a lone
+    // repeated word, so its window can safely span several turns (2048
+    // tokens) without the "avoids saying names" problem a classic repeat
+    // penalty would have at that range.
+    double repeatPenalty = 1.05;
+    int repeatLastN = 64;
+    double dryMultiplier = 0.8;
+    double dryBase = 1.75;
+    int dryAllowedLength = 2;
+    int dryPenaltyLastN = 2048;
 
     bool flashAttention = true;
 };

@@ -44,8 +44,6 @@ LlamaStories::LlamaStories(QWidget *parent)
     connect(ui->spinLlamaTopP, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaTopK, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaMinP, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
-    connect(ui->spinLlamaRepeatPenalty, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
-    connect(ui->spinLlamaRepeatLastN, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->chkFlashAttention, &QCheckBox::toggled, this, &LlamaStories::llamaOptionChanged);
 }
 
@@ -468,8 +466,6 @@ void LlamaStories::loadLlamaOptionsIntoUi()
     ui->spinLlamaTopP->setValue(m_llamaOptions.topP);
     ui->spinLlamaTopK->setValue(m_llamaOptions.topK);
     ui->spinLlamaMinP->setValue(m_llamaOptions.minP);
-    ui->spinLlamaRepeatPenalty->setValue(m_llamaOptions.repeatPenalty);
-    ui->spinLlamaRepeatLastN->setValue(m_llamaOptions.repeatLastN);
     ui->chkFlashAttention->setChecked(m_llamaOptions.flashAttention);
 
     refreshLlamaModelList();
@@ -488,8 +484,6 @@ void LlamaStories::saveLlamaOptionsFromUi()
     m_llamaOptions.topP = ui->spinLlamaTopP->value();
     m_llamaOptions.topK = ui->spinLlamaTopK->value();
     m_llamaOptions.minP = ui->spinLlamaMinP->value();
-    m_llamaOptions.repeatPenalty = ui->spinLlamaRepeatPenalty->value();
-    m_llamaOptions.repeatLastN = ui->spinLlamaRepeatLastN->value();
     m_llamaOptions.flashAttention = ui->chkFlashAttention->isChecked();
     m_llamaOptions.save(*m_settings);
 }

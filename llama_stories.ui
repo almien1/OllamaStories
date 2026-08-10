@@ -534,59 +534,7 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
-           <widget class="QLabel" name="lblLlamaRepeatPenalty">
-            <property name="text">
-             <string>Repeat penalty</string>
-            </property>
-           </widget>
-          </item>
           <item row="10" column="1">
-           <widget class="QDoubleSpinBox" name="spinLlamaRepeatPenalty">
-            <property name="toolTip">
-             <string>Makes recently-used words less likely to be repeated. 1.0 disables it; higher values push harder against repetition.</string>
-            </property>
-            <property name="decimals">
-             <number>2</number>
-            </property>
-            <property name="minimum">
-             <double>0.500000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>2.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="0">
-           <widget class="QLabel" name="lblLlamaRepeatLastN">
-            <property name="text">
-             <string>Repeat last N</string>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="1">
-           <widget class="QSpinBox" name="spinLlamaRepeatLastN">
-            <property name="toolTip">
-             <string>How many of the most recent tokens the repeat penalty looks back over.</string>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>8192</number>
-            </property>
-            <property name="value">
-             <number>256</number>
-            </property>
-           </widget>
-          </item>
-          <item row="12" column="1">
            <widget class="QCheckBox" name="chkFlashAttention">
             <property name="toolTip">
              <string>Faster, lower-memory attention computation on supported GPUs. Leave on unless llama-server reports it isn't supported.</string>
@@ -599,7 +547,7 @@
             </property>
            </widget>
           </item>
-          <item row="13" column="1">
+          <item row="11" column="1">
            <widget class="QPushButton" name="btnRoleplayDefaults">
             <property name="toolTip">
              <string>Reset all the sampling values above back to the recommended roleplay defaults.</string>
@@ -609,14 +557,14 @@
             </property>
            </widget>
           </item>
-          <item row="14" column="0">
+          <item row="12" column="0">
            <widget class="QLabel" name="lblLlamaServerState">
             <property name="text">
              <string>Server</string>
             </property>
            </widget>
           </item>
-          <item row="14" column="1">
+          <item row="12" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QPushButton" name="btnStartLlamaServer">
