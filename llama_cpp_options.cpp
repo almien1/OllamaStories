@@ -113,7 +113,6 @@ void LlamaCppOptions::load(QSettings &settings)
     modelsDir = settings.value("modelsDir", modelsDir).toString();
     modelFile = settings.value("modelFile", modelFile).toString();
     host = settings.value("host", host).toString();
-    port = settings.value("port", port).toInt();
     contextSize = settings.value("contextSize", contextSize).toInt();
     gpuLayers = settings.value("gpuLayers", gpuLayers).toInt();
     temperature = settings.value("temperature", temperature).toDouble();
@@ -135,7 +134,6 @@ void LlamaCppOptions::save(QSettings &settings) const
     settings.setValue("modelsDir", modelsDir);
     settings.setValue("modelFile", modelFile);
     settings.setValue("host", host);
-    settings.setValue("port", port);
     settings.setValue("contextSize", contextSize);
     settings.setValue("gpuLayers", gpuLayers);
     settings.setValue("temperature", temperature);

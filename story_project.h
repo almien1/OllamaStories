@@ -14,8 +14,6 @@ public:
     bool save();
     bool saveAs(const QString &filename);
 
-    bool writeModelfile(const QString &filename);
-    QString asModelfile() const;
     QString combinedPrompt() const;
 
     // Storage
@@ -26,12 +24,8 @@ public:
     using Stories = QMap<QString , Story>;
 
     // Settings
-    QString m_name; // model name within ollama
     Stories m_stories;
     QString m_selectedStory;
-    QString m_model;
-    double m_temperature;
-    int m_context; // number of tokens to remember
     QString m_globalPrompt; // a system prompt that applies to all story prompts
     QString m_projectNotes; // notes about the whole project or system
 

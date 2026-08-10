@@ -35,6 +35,8 @@ private slots:
     void onReadyReadStandardError();
 
 private:
+    static int findFreePort(const QString &host);
+
     QProcess *m_process = nullptr;
     QNetworkAccessManager *m_network = nullptr;
     QTimer *m_healthTimer = nullptr;

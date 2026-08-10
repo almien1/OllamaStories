@@ -35,7 +35,10 @@ public:
     QString modelsDir;
     QString modelFile;
     QString host = "127.0.0.1";
-    int port = 8080;
+
+    // Not user-configurable: LlamaCppServer assigns a free port to this just
+    // before launching, since we're the only client that ever talks to it.
+    int port = 0;
 
     int contextSize = 8192;
     int gpuLayers = 999; // offload as many layers to GPU as possible

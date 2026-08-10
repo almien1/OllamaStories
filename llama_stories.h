@@ -2,10 +2,8 @@
 #define LLAMA_STORIES_H
 
 #include "story_project.h"
-#include "ollama_cli.h"
 #include "llama_cpp_options.h"
 
-class Ollama;
 class QSettings;
 class QListWidgetItem;
 class LlamaCppServer;
@@ -30,8 +28,6 @@ public slots:
     void responseFinished();
     void showQuestion(QString text);
 
-    void gotModelList(QStringList models);
-
     // Custom textbox for input
     void enterPressed();
 
@@ -51,8 +47,6 @@ private slots:
     void on_actionExit_triggered();
 
     // Toolbar
-    void on_actionCompileAndRun_triggered();
-    void on_actionCompile_triggered();
     void on_Run_triggered();
 
     // Main editor
@@ -64,13 +58,6 @@ private slots:
 
     // Global prompt editor
     void on_txtGlobalPrompt_textChanged();
-
-    // Settings
-    void on_txtProjectName_textChanged(const QString &arg1);
-    void on_cmbModel_currentTextChanged(const QString &arg1);
-    void on_btnRefreshModelList_pressed();
-    void on_slideTemp_valueChanged(int value);
-    void on_slideContext_valueChanged(int value);
 
     // Notes
     void on_txtProjectNotes_textChanged();
@@ -103,11 +90,8 @@ private:
     void selectStory(const QString &name);
     QString projectDirectory();
 
-    bool compileProject();
     void run();
     void sendInput();
-
-    void updateModelList();
 
     void resetStoryTimer();
     void storyTimer();
@@ -125,7 +109,6 @@ private:
     QTime m_storyTime;
     int m_storyDayCount = 1;
 
-    OllamaCLI m_ai;
     QThread *m_conversationThread = nullptr;
 
     LlamaCppOptions m_llamaOptions;

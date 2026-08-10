@@ -2,6 +2,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QTcpServer>
+#include <QHostAddress>
 #include <QTimer>
 #include <QUrl>
 
@@ -44,11 +46,29 @@ void LlamaCppServer::stop()
     }
 }
 
+int LlamaCppServer::findFreePort(const QString &host)
+{
+    QTcpServer probe;
+    // Binding to port 0 asks the OS to hand back an unused ephemeral port.
+    if (!probe.listen(QHostAddress(host), 0))
+    {
+        probe.listen(QHostAddress::LocalHost, 0);
+    }
+    int port = probe.serverPort();
+    probe.close();
+    return port;
+}
+
 void LlamaCppServer::start(const LlamaCppOptions &options)
 {
     stop();
 
-    m_baseUrl = options.baseUrl();
+    // We're the only client of this server, so there's no reason to make the
+    // port a user-facing setting - just claim a free one each time.
+    LlamaCppOptions resolvedOptions = options;
+    resolvedOptions.port = findFreePort(options.host);
+
+    m_baseUrl = resolvedOptions.baseUrl();
     m_healthAttempts = 0;
 
     if (!m_network)
@@ -62,7 +82,7 @@ void LlamaCppServer::start(const LlamaCppOptions &options)
     connect(m_process, &QProcess::readyReadStandardOutput, this, &LlamaCppServer::onReadyReadStandardOutput);
     connect(m_process, &QProcess::readyReadStandardError, this, &LlamaCppServer::onReadyReadStandardError);
 
-    m_process->start(options.serverPath, options.serverArguments());
+    m_process->start(resolvedOptions.serverPath, resolvedOptions.serverArguments());
 
     if (!m_healthTimer)
     {

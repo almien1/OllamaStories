@@ -4,7 +4,6 @@
 #include "llama_cpp_chat.h"
 #include "llama_cpp_server.h"
 #include "input_editbox.h"
-#include "model_list.h"
 #include <QFile>
 #include <QDir>
 
@@ -19,7 +18,6 @@ LlamaStories::LlamaStories(QWidget *parent)
     ui->storyTab->setCurrentIndex(0);
 
     connect(ui->txtRunInput, &InputEditbox::enterPressed, this, &LlamaStories::enterPressed);
-    updateModelList();
 
     m_storyTimer = new QTimer(this);
     resetStoryTimer();
@@ -36,7 +34,6 @@ LlamaStories::LlamaStories(QWidget *parent)
     connect(ui->txtLlamaServerPath, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
     connect(ui->txtLlamaModelsDir, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
     connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::llamaOptionChanged);
-    connect(ui->spinLlamaPort, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaContext, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaGpuLayers, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaTemp, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
@@ -130,11 +127,7 @@ void LlamaStories::on_actionSave_triggered()
 
 void LlamaStories::displayLoadedProject()
 {
-    ui->txtProjectName->setText(m_project.m_name);
     ui->txtGlobalPrompt->setText(m_project.m_globalPrompt);
-    ui->cmbModel->setEditText(m_project.m_model);
-    ui->slideTemp->setValue(m_project.m_temperature * 100);
-    ui->slideContext->setValue(m_project.m_context);
     ui->txtProjectNotes->setText(m_project.m_projectNotes);
     displayStoryList();
     selectStory(m_project.m_selectedStory);
@@ -174,29 +167,6 @@ void LlamaStories::selectStory(const QString &name)
 QString LlamaStories::projectDirectory()
 {
     return m_settings->value("recent_directory").toString();
-}
-
-bool LlamaStories::compileProject()
-{
-    bool success = false;
-    saveProject();
-
-    ui->actionCompile->setEnabled(false);
-    ui->actionCompileAndRun->setEnabled(false);
-    QCoreApplication::processEvents();
-
-    QTemporaryFile modelFile;
-    if (modelFile.open())
-    {
-        m_project.writeModelfile(modelFile.fileName());
-        success = m_ai.compileModel(m_project.m_name, modelFile.fileName());
-    }
-
-    ui->actionCompile->setEnabled(true);
-    ui->actionCompileAndRun->setEnabled(true);
-    QCoreApplication::processEvents();
-
-    return success;
 }
 
 void LlamaStories::run()
@@ -259,11 +229,6 @@ void LlamaStories::startConversation()
     m_conversationThread->start();
 }
 
-void LlamaStories::updateModelList()
-{
-
-}
-
 void LlamaStories::on_txtStoryPrompt_textChanged()
 {
     if (!m_project.m_selectedStory.isEmpty())
@@ -285,41 +250,6 @@ void LlamaStories::on_txtGlobalPrompt_textChanged()
 {
     m_project.m_globalPrompt = ui->txtGlobalPrompt->toPlainText();
 }
-
-void LlamaStories::on_txtProjectName_textChanged(const QString &text)
-{
-    m_project.m_name = text;
-}
-
-void LlamaStories::on_cmbModel_currentTextChanged(const QString &text)
-{
-    m_project.m_model = text;
-}
-
-void LlamaStories::on_slideTemp_valueChanged(int value)
-{
-    m_project.m_temperature = 0.01 * value;
-}
-
-void LlamaStories::on_slideContext_valueChanged(int value)
-{
-    m_project.m_context = value;
-}
-
-void LlamaStories::on_actionCompileAndRun_triggered()
-{
-    compileProject();
-    run();
-}
-
-void LlamaStories::on_actionCompile_triggered()
-{
-    if (!compileProject())
-    {
-        QMessageBox::warning(this, "couldn't compile", "couldn't compile project");
-    }
-}
-
 
 void LlamaStories::on_Run_triggered()
 {
@@ -523,49 +453,10 @@ void LlamaStories::on_btnTimeStep_pressed()
     storyTimer();
 }
 
-void LlamaStories::on_btnRefreshModelList_pressed()
-{
-    ModelList *worker = new ModelList();
-    QThread *thread = new QThread(this);
-    worker->moveToThread(thread);
-
-    connect(worker, &ModelList::modelList, this, &LlamaStories::gotModelList);
-
-    connect(thread, &QThread::started, worker, &ModelList::start);
-
-    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
-    connect(this, &QObject::destroyed, thread, &QThread::quit);
-    thread->start();
-}
-
-void LlamaStories::gotModelList(QStringList models)
-{
-    QString previousModel = ui->cmbModel->currentText();
-    ui->cmbModel->clear();
-    bool foundPrevious = false;
-    models.sort();
-    for (auto & model : models)
-    {
-        ui->cmbModel->addItem(model);
-        if (model == previousModel)
-        {
-            foundPrevious= true;
-        }
-    }
-    if ((!foundPrevious) && (!previousModel.isEmpty()))
-    {
-        QMessageBox::information(this, "Model not found", QString("%1 no longer installed, please choose another").arg(previousModel));
-        // TODO: warning?
-    }
-    ui->cmbModel->setCurrentText(previousModel);
-}
-
 void LlamaStories::loadLlamaOptionsIntoUi()
 {
     ui->txtLlamaServerPath->setText(m_llamaOptions.serverPath);
     ui->txtLlamaModelsDir->setText(m_llamaOptions.modelsDir);
-    ui->spinLlamaPort->setValue(m_llamaOptions.port);
     ui->spinLlamaContext->setValue(m_llamaOptions.contextSize);
     ui->spinLlamaGpuLayers->setValue(m_llamaOptions.gpuLayers);
     ui->spinLlamaTemp->setValue(m_llamaOptions.temperature);
@@ -588,7 +479,6 @@ void LlamaStories::saveLlamaOptionsFromUi()
     m_llamaOptions.serverPath = ui->txtLlamaServerPath->text();
     m_llamaOptions.modelsDir = ui->txtLlamaModelsDir->text();
     m_llamaOptions.modelFile = ui->cmbLlamaModel->currentText();
-    m_llamaOptions.port = ui->spinLlamaPort->value();
     m_llamaOptions.contextSize = ui->spinLlamaContext->value();
     m_llamaOptions.gpuLayers = ui->spinLlamaGpuLayers->value();
     m_llamaOptions.temperature = ui->spinLlamaTemp->value();
@@ -666,6 +556,7 @@ void LlamaStories::on_btnStopLlamaServer_clicked()
 {
     m_llamaServer->stop();
     ui->lblLlamaServerStatus->setText("Stopped");
+    ui->lblLlamaServerStatus->setToolTip("");
     ui->btnStartLlamaServer->setEnabled(true);
     ui->btnStopLlamaServer->setEnabled(false);
 }
@@ -684,6 +575,7 @@ void LlamaStories::llamaOptionChanged()
 void LlamaStories::llamaServerReady()
 {
     ui->lblLlamaServerStatus->setText("Ready");
+    ui->lblLlamaServerStatus->setToolTip(m_llamaServer->baseUrl());
     ui->btnStartLlamaServer->setEnabled(false);
     ui->btnStopLlamaServer->setEnabled(true);
 

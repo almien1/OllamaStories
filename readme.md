@@ -15,24 +15,13 @@ chat template is respected).
 - 'Run detached' (Ctrl-T) opens a command line window running `llama-cli` interactively with the same prompt/settings
 - Ctrl-C will copy the story and the global prompt into the clipboard, and could be pasted into a LLM website chat window
 
-## Compiling an Ollama model (optional)
-
-The **Compile (Ollama)** tab and the "Compile" button are unchanged: they still build an [Ollama](https://ollama.com)
-model from your prompt via `ollama create`, for anyone who prefers to run their stories through Ollama instead.
-
-- Install Ollama, choose a model name and an installed Ollama model (e.g. `gemma3:12b`), set temperature/context, then
-  press Compile. This generates a new model with your prompt that will be visible in `ollama list` and can be run using
-  `ollama run story` (if you used "story" as the name).
-
 ## Multiple stories
 
 Perhaps you have a successful prompt and would like to explore themes around that idea
 
-Move the "common" part of your prompt into the Global tab, leaving just the theme-specific part in the stories tab. 
+Move the "common" part of your prompt into the Global tab, leaving just the theme-specific part in the stories tab.
 
-Then create another story with a different theme.
-
-The 'Compile' button will combine your selected story with the global prompt.
+Then create another story with a different theme. 'Run' combines your selected story with the global prompt.
 
 
 

@@ -1,8 +1,6 @@
 #ifndef PCH_H
 #define PCH_H
 
-#include "ollama-hpp/singleheader/ollama.hpp"
-
 #include <QMainWindow>
 #include <QThread>
 #include <QTimer>
