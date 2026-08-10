@@ -14,7 +14,6 @@ void LlamaCppOptions::applyRoleplayDefaults()
     repeatPenalty = 1.1;
     repeatLastN = 256;
     flashAttention = true;
-    useModelChatTemplate = true;
 }
 
 QString LlamaCppOptions::modelPath() const
@@ -57,14 +56,9 @@ QStringList LlamaCppOptions::serverArguments() const
         args += {"-fa", "on"};
     }
 
-    if (useModelChatTemplate)
-    {
-        args += "--jinja";
-    }
-    else if (!chatTemplate.isEmpty())
-    {
-        args += {"--chat-template", chatTemplate};
-    }
+    // Always defer to the chat template embedded in the model itself, so it
+    // sees prompts in the format it was actually trained on.
+    args += "--jinja";
 
     if (!apiKey.isEmpty())
     {
@@ -94,14 +88,7 @@ QStringList LlamaCppOptions::cliArguments(const QString &systemPromptFilePath) c
         args += {"-fa", "on"};
     }
 
-    if (useModelChatTemplate)
-    {
-        args += "--jinja";
-    }
-    else if (!chatTemplate.isEmpty())
-    {
-        args += {"--chat-template", chatTemplate};
-    }
+    args += "--jinja";
 
     if (!systemPromptFilePath.isEmpty())
     {
@@ -128,8 +115,6 @@ void LlamaCppOptions::load(QSettings &settings)
     repeatPenalty = settings.value("repeatPenalty", repeatPenalty).toDouble();
     repeatLastN = settings.value("repeatLastN", repeatLastN).toInt();
     flashAttention = settings.value("flashAttention", flashAttention).toBool();
-    useModelChatTemplate = settings.value("useModelChatTemplate", useModelChatTemplate).toBool();
-    chatTemplate = settings.value("chatTemplate", chatTemplate).toString();
     settings.endGroup();
 }
 
@@ -150,7 +135,5 @@ void LlamaCppOptions::save(QSettings &settings) const
     settings.setValue("repeatPenalty", repeatPenalty);
     settings.setValue("repeatLastN", repeatLastN);
     settings.setValue("flashAttention", flashAttention);
-    settings.setValue("useModelChatTemplate", useModelChatTemplate);
-    settings.setValue("chatTemplate", chatTemplate);
     settings.endGroup();
 }

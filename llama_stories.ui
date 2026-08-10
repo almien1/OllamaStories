@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>483</height>
+    <height>502</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,7 @@
        <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="systemPromptTab">
        <attribute name="title">
@@ -232,7 +232,7 @@
       </widget>
       <widget class="QWidget" name="llamaCppTab">
        <attribute name="title">
-        <string>Llama.cpp</string>
+        <string>Settings</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_8">
         <item>
@@ -330,7 +330,7 @@
             <item>
              <widget class="QComboBox" name="cmbLlamaModel">
               <property name="toolTip">
-               <string>Which .gguf model file to load</string>
+               <string>Which .gguf model file to load. Its own chat template is always used (--jinja).</string>
               </property>
               <property name="editable">
                <bool>true</bool>
@@ -339,14 +339,30 @@
             </item>
            </layout>
           </item>
-          <item row="3" column="0">
+          <item row="3" column="1">
+           <widget class="QLabel" name="lblChatTemplateWarning">
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: #b3841f;</string>
+            </property>
+            <property name="text">
+             <string>This model has no built-in chat template - replies may not follow its intended format.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
            <widget class="QLabel" name="lblLlamaContext">
             <property name="text">
              <string>Context size</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QSpinBox" name="spinLlamaContext">
             <property name="toolTip">
              <string>Maximum tokens (prompt + conversation history) the model keeps in mind at once. Larger values need more VRAM.</string>
@@ -365,14 +381,14 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="lblLlamaGpuLayers">
             <property name="text">
              <string>GPU layers</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <item>
              <widget class="QCheckBox" name="chkGpuLayersAll">
@@ -408,14 +424,14 @@
             </item>
            </layout>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="lblLlamaTemp">
             <property name="text">
              <string>Temperature</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QDoubleSpinBox" name="spinLlamaTemp">
             <property name="toolTip">
              <string>Randomness of word choice. Higher is more creative and varied; lower is more focused and predictable.</string>
@@ -437,14 +453,14 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="lblLlamaTopP">
             <property name="text">
              <string>Top P</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="7" column="1">
            <widget class="QDoubleSpinBox" name="spinLlamaTopP">
             <property name="toolTip">
              <string>Nucleus sampling: only consider the smallest set of next-word candidates whose combined probability reaches this fraction.</string>
@@ -466,14 +482,14 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="lblLlamaTopK">
             <property name="text">
              <string>Top K</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <widget class="QSpinBox" name="spinLlamaTopK">
             <property name="toolTip">
              <string>Only consider the K most likely next words at each step.</string>
@@ -489,14 +505,14 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="9" column="0">
            <widget class="QLabel" name="lblLlamaMinP">
             <property name="text">
              <string>Min P</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="9" column="1">
            <widget class="QDoubleSpinBox" name="spinLlamaMinP">
             <property name="toolTip">
              <string>Discard words less likely than this fraction of the single most likely word. Keeps replies coherent without cutting off creative choices the way a low temperature would.</string>
@@ -518,14 +534,14 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="10" column="0">
            <widget class="QLabel" name="lblLlamaRepeatPenalty">
             <property name="text">
              <string>Repeat penalty</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="10" column="1">
            <widget class="QDoubleSpinBox" name="spinLlamaRepeatPenalty">
             <property name="toolTip">
              <string>Makes recently-used words less likely to be repeated. 1.0 disables it; higher values push harder against repetition.</string>
@@ -547,14 +563,14 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
+          <item row="11" column="0">
            <widget class="QLabel" name="lblLlamaRepeatLastN">
             <property name="text">
              <string>Repeat last N</string>
             </property>
            </widget>
           </item>
-          <item row="10" column="1">
+          <item row="11" column="1">
            <widget class="QSpinBox" name="spinLlamaRepeatLastN">
             <property name="toolTip">
              <string>How many of the most recent tokens the repeat penalty looks back over.</string>
@@ -570,7 +586,7 @@
             </property>
            </widget>
           </item>
-          <item row="11" column="1">
+          <item row="12" column="1">
            <widget class="QCheckBox" name="chkFlashAttention">
             <property name="toolTip">
              <string>Faster, lower-memory attention computation on supported GPUs. Leave on unless llama-server reports it isn't supported.</string>
@@ -583,70 +599,7 @@
             </property>
            </widget>
           </item>
-          <item row="12" column="1">
-           <widget class="QCheckBox" name="chkUseModelTemplate">
-            <property name="toolTip">
-             <string>Format the conversation using the chat template stored inside the model file itself (--jinja), so it sees prompts in the format it was trained on. Recommended, especially for roleplay finetunes with unusual templates.</string>
-            </property>
-            <property name="text">
-             <string>Use model's own chat template (recommended for roleplay finetunes)</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="13" column="0">
-           <widget class="QLabel" name="lblChatTemplate">
-            <property name="text">
-             <string>Chat template override</string>
-            </property>
-           </widget>
-          </item>
           <item row="13" column="1">
-           <widget class="QComboBox" name="cmbChatTemplate">
-            <property name="toolTip">
-             <string>Only used when "Use model's own chat template" is off: which built-in template to force instead.</string>
-            </property>
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-            <item>
-             <property name="text">
-              <string>chatml</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>llama3</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>gemma</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>mistral-v7</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>vicuna</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>phi3</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="14" column="1">
            <widget class="QPushButton" name="btnRoleplayDefaults">
             <property name="toolTip">
              <string>Reset all the sampling values above back to the recommended roleplay defaults.</string>
@@ -656,14 +609,14 @@
             </property>
            </widget>
           </item>
-          <item row="15" column="0">
+          <item row="14" column="0">
            <widget class="QLabel" name="lblLlamaServerState">
             <property name="text">
              <string>Server</string>
             </property>
            </widget>
           </item>
-          <item row="15" column="1">
+          <item row="14" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QPushButton" name="btnStartLlamaServer">
@@ -677,14 +630,14 @@
             </item>
             <item>
              <widget class="QPushButton" name="btnStopLlamaServer">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="toolTip">
                <string>Stop the running llama-server</string>
               </property>
               <property name="text">
                <string>Stop</string>
-              </property>
-              <property name="enabled">
-               <bool>false</bool>
               </property>
              </widget>
             </item>

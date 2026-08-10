@@ -138,7 +138,7 @@ private:
 
 }
 
-GgufInfo readGgufBlockCount(const QString &path)
+GgufInfo readGgufInfo(const QString &path)
 {
     GgufInfo info;
 
@@ -160,7 +160,9 @@ GgufInfo readGgufBlockCount(const QString &path)
     quint64 kvCount = reader.readU64();
     Q_UNUSED(tensorCount);
 
-    for (quint64 i = 0; i < kvCount && reader.ok(); ++i)
+    bool foundBlockCount = false;
+
+    for (quint64 i = 0; i < kvCount && reader.ok() && (!foundBlockCount || !info.hasChatTemplate); ++i)
     {
         QString key = reader.readString();
         if (!reader.ok())
@@ -173,7 +175,7 @@ GgufInfo readGgufBlockCount(const QString &path)
             break;
         }
 
-        if (key.endsWith(".block_count"))
+        if (!foundBlockCount && key.endsWith(".block_count"))
         {
             quint64 value = reader.readAsUInt(type);
             if (reader.ok() && value > 0 && value < 100000)
@@ -181,10 +183,17 @@ GgufInfo readGgufBlockCount(const QString &path)
                 info.blockCount = int(value);
                 info.valid = true;
             }
-            break;
+            foundBlockCount = true;
         }
-
-        reader.skipValue(type);
+        else if (key == "tokenizer.chat_template")
+        {
+            info.hasChatTemplate = true;
+            reader.skipValue(type);
+        }
+        else
+        {
+            reader.skipValue(type);
+        }
     }
 
     return info;

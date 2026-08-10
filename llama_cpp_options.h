@@ -60,12 +60,6 @@ public:
     int repeatLastN = 256;
 
     bool flashAttention = true;
-
-    // When true, pass --jinja so llama.cpp uses the chat template embedded
-    // in the model itself (best for roleplay finetunes with their own
-    // format). When false, chatTemplate names an explicit override.
-    bool useModelChatTemplate = true;
-    QString chatTemplate;
 };
 
 #endif // LLAMA_CPP_OPTIONS_H

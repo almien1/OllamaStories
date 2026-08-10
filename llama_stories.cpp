@@ -32,12 +32,12 @@ LlamaStories::LlamaStories(QWidget *parent)
 
     m_llamaOptions.load(*m_settings);
     loadLlamaOptionsIntoUi();
-    updateGpuLayersLimit();
+    updateModelInfo();
 
     connect(ui->txtLlamaServerPath, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
     connect(ui->txtLlamaModelsDir, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
     connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::llamaOptionChanged);
-    connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::updateGpuLayersLimit);
+    connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::updateModelInfo);
     connect(ui->spinLlamaContext, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaGpuLayers, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaTemp, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
@@ -47,7 +47,6 @@ LlamaStories::LlamaStories(QWidget *parent)
     connect(ui->spinLlamaRepeatPenalty, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaRepeatLastN, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->chkFlashAttention, &QCheckBox::toggled, this, &LlamaStories::llamaOptionChanged);
-    connect(ui->cmbChatTemplate, &QComboBox::currentTextChanged, this, &LlamaStories::llamaOptionChanged);
 }
 
 LlamaStories::~LlamaStories()
@@ -472,9 +471,6 @@ void LlamaStories::loadLlamaOptionsIntoUi()
     ui->spinLlamaRepeatPenalty->setValue(m_llamaOptions.repeatPenalty);
     ui->spinLlamaRepeatLastN->setValue(m_llamaOptions.repeatLastN);
     ui->chkFlashAttention->setChecked(m_llamaOptions.flashAttention);
-    ui->chkUseModelTemplate->setChecked(m_llamaOptions.useModelChatTemplate);
-    ui->cmbChatTemplate->setEnabled(!m_llamaOptions.useModelChatTemplate);
-    ui->cmbChatTemplate->setCurrentText(m_llamaOptions.chatTemplate);
 
     refreshLlamaModelList();
     ui->cmbLlamaModel->setCurrentText(m_llamaOptions.modelFile);
@@ -495,8 +491,6 @@ void LlamaStories::saveLlamaOptionsFromUi()
     m_llamaOptions.repeatPenalty = ui->spinLlamaRepeatPenalty->value();
     m_llamaOptions.repeatLastN = ui->spinLlamaRepeatLastN->value();
     m_llamaOptions.flashAttention = ui->chkFlashAttention->isChecked();
-    m_llamaOptions.useModelChatTemplate = ui->chkUseModelTemplate->isChecked();
-    m_llamaOptions.chatTemplate = ui->cmbChatTemplate->currentText();
     m_llamaOptions.save(*m_settings);
 }
 
@@ -582,12 +576,6 @@ void LlamaStories::on_btnStopLlamaServer_clicked()
     ui->btnStopLlamaServer->setEnabled(false);
 }
 
-void LlamaStories::on_chkUseModelTemplate_toggled(bool checked)
-{
-    ui->cmbChatTemplate->setEnabled(!checked);
-    saveLlamaOptionsFromUi();
-}
-
 void LlamaStories::on_chkGpuLayersAll_toggled(bool checked)
 {
     ui->spinLlamaGpuLayers->setEnabled(!checked);
@@ -599,17 +587,19 @@ void LlamaStories::llamaOptionChanged()
     saveLlamaOptionsFromUi();
 }
 
-void LlamaStories::updateGpuLayersLimit()
+void LlamaStories::updateModelInfo()
 {
     saveLlamaOptionsFromUi();
 
-    GgufInfo info = readGgufBlockCount(m_llamaOptions.modelPath());
+    GgufInfo info = readGgufInfo(m_llamaOptions.modelPath());
     int maxLayers = info.valid ? info.blockCount : 999;
 
     ui->spinLlamaGpuLayers->setMaximum(maxLayers);
     ui->spinLlamaGpuLayers->setToolTip(info.valid
         ? QString("This model has %1 layers. Lower this if it doesn't fit in VRAM.").arg(maxLayers)
         : "How many layers to offload to the GPU. Lower this if the model doesn't fit in VRAM (pick a valid .gguf model to see its exact layer count here).");
+
+    ui->lblChatTemplateWarning->setVisible(info.valid && !info.hasChatTemplate);
 }
 
 void LlamaStories::llamaServerReady()
