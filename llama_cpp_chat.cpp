@@ -6,10 +6,11 @@
 #include <QJsonObject>
 #include <QUrl>
 
-LlamaCppChat::LlamaCppChat(const QString &baseUrl, const QString &systemPrompt, const QString &firstMessage,
+LlamaCppChat::LlamaCppChat(const QString &baseUrl, const QString &apiKey, const QString &systemPrompt, const QString &firstMessage,
                            const LlamaCppOptions &options, QObject *parent)
     : QObject(parent)
     , m_baseUrl(baseUrl)
+    , m_apiKey(apiKey)
     , m_options(options)
 {
     if (!systemPrompt.trimmed().isEmpty())
@@ -67,6 +68,10 @@ void LlamaCppChat::doChat()
 
     QNetworkRequest request(QUrl(m_baseUrl + "/v1/chat/completions"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    if (!m_apiKey.isEmpty())
+    {
+        request.setRawHeader("Authorization", ("Bearer " + m_apiKey).toUtf8());
+    }
 
     m_partialResponse.clear();
     m_lineBuffer.clear();

@@ -76,8 +76,10 @@ private slots:
     void on_btnStartLlamaServer_clicked();
     void on_btnStopLlamaServer_clicked();
     void on_chkUseModelTemplate_toggled(bool checked);
+    void on_chkGpuLayersAll_toggled(bool checked);
 
     void llamaOptionChanged();
+    void updateGpuLayersLimit();
     void llamaServerReady();
     void llamaServerFailed(QString error);
 

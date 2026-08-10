@@ -6,6 +6,7 @@
 #include <QHostAddress>
 #include <QTimer>
 #include <QUrl>
+#include <QUuid>
 
 namespace {
 const int kHealthPollIntervalMs = 500;
@@ -64,11 +65,16 @@ void LlamaCppServer::start(const LlamaCppOptions &options)
     stop();
 
     // We're the only client of this server, so there's no reason to make the
-    // port a user-facing setting - just claim a free one each time.
+    // port or API key user-facing settings - a fresh port and key are
+    // claimed each launch. The key also stops other local processes (or a
+    // malicious webpage's JS reaching across to localhost) from using the
+    // server while it's running.
     LlamaCppOptions resolvedOptions = options;
     resolvedOptions.port = findFreePort(options.host);
+    resolvedOptions.apiKey = QUuid::createUuid().toString(QUuid::Id128);
 
     m_baseUrl = resolvedOptions.baseUrl();
+    m_apiKey = resolvedOptions.apiKey;
     m_healthAttempts = 0;
 
     if (!m_network)
@@ -108,6 +114,10 @@ void LlamaCppServer::checkHealth()
     }
 
     QNetworkRequest request(QUrl(m_baseUrl + "/health"));
+    if (!m_apiKey.isEmpty())
+    {
+        request.setRawHeader("Authorization", ("Bearer " + m_apiKey).toUtf8());
+    }
     QNetworkReply *reply = m_network->get(request);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         reply->deleteLater();

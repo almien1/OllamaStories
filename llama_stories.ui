@@ -368,25 +368,45 @@
           <item row="4" column="0">
            <widget class="QLabel" name="lblLlamaGpuLayers">
             <property name="text">
-             <string>GPU layers (999 = all)</string>
+             <string>GPU layers</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QSpinBox" name="spinLlamaGpuLayers">
-            <property name="toolTip">
-             <string>How many model layers to offload to the GPU. 999 offloads everything for maximum speed; lower this if the model doesn't fit in VRAM.</string>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>999</number>
-            </property>
-            <property name="value">
-             <number>999</number>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QCheckBox" name="chkGpuLayersAll">
+              <property name="toolTip">
+               <string>Offload every layer of the model to the GPU for maximum speed.</string>
+              </property>
+              <property name="text">
+               <string>All (recommended)</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinLlamaGpuLayers">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>How many layers to offload to the GPU. Lower this if the model doesn't fit in VRAM (pick a valid .gguf model to see its exact layer count here).</string>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>999</number>
+              </property>
+              <property name="value">
+               <number>999</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="lblLlamaTemp">

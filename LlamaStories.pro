@@ -5,6 +5,7 @@ CONFIG += c++17
 DESTDIR = output
 
 SOURCES += \
+    gguf_info.cpp \
     input_editbox.cpp \
     main.cpp \
     llama_cpp_chat.cpp \
@@ -14,6 +15,7 @@ SOURCES += \
     story_project.cpp
 
 HEADERS += \
+    gguf_info.h \
     input_editbox.h \
     llama_cpp_chat.h \
     llama_cpp_options.h \

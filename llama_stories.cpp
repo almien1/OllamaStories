@@ -4,8 +4,10 @@
 #include "llama_cpp_chat.h"
 #include "llama_cpp_server.h"
 #include "input_editbox.h"
+#include "gguf_info.h"
 #include <QFile>
 #include <QDir>
+#include <QSignalBlocker>
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
@@ -30,10 +32,12 @@ LlamaStories::LlamaStories(QWidget *parent)
 
     m_llamaOptions.load(*m_settings);
     loadLlamaOptionsIntoUi();
+    updateGpuLayersLimit();
 
     connect(ui->txtLlamaServerPath, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
     connect(ui->txtLlamaModelsDir, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
     connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::updateGpuLayersLimit);
     connect(ui->spinLlamaContext, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaGpuLayers, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
     connect(ui->spinLlamaTemp, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
@@ -210,7 +214,7 @@ void LlamaStories::startConversation()
     }
 
     QString systemPrompt = m_project.combinedPrompt();
-    LlamaCppChat *worker = new LlamaCppChat(m_llamaServer->baseUrl(), systemPrompt, "hello, who are you?", m_llamaOptions, nullptr); // no parent because we will call moveToThread
+    LlamaCppChat *worker = new LlamaCppChat(m_llamaServer->baseUrl(), m_llamaServer->apiKey(), systemPrompt, "hello, who are you?", m_llamaOptions, nullptr); // no parent because we will call moveToThread
     m_conversationThread = new QThread(this);
     worker->moveToThread(m_conversationThread);
 
@@ -458,6 +462,8 @@ void LlamaStories::loadLlamaOptionsIntoUi()
     ui->txtLlamaServerPath->setText(m_llamaOptions.serverPath);
     ui->txtLlamaModelsDir->setText(m_llamaOptions.modelsDir);
     ui->spinLlamaContext->setValue(m_llamaOptions.contextSize);
+    ui->chkGpuLayersAll->setChecked(m_llamaOptions.gpuLayersAll);
+    ui->spinLlamaGpuLayers->setEnabled(!m_llamaOptions.gpuLayersAll);
     ui->spinLlamaGpuLayers->setValue(m_llamaOptions.gpuLayers);
     ui->spinLlamaTemp->setValue(m_llamaOptions.temperature);
     ui->spinLlamaTopP->setValue(m_llamaOptions.topP);
@@ -480,6 +486,7 @@ void LlamaStories::saveLlamaOptionsFromUi()
     m_llamaOptions.modelsDir = ui->txtLlamaModelsDir->text();
     m_llamaOptions.modelFile = ui->cmbLlamaModel->currentText();
     m_llamaOptions.contextSize = ui->spinLlamaContext->value();
+    m_llamaOptions.gpuLayersAll = ui->chkGpuLayersAll->isChecked();
     m_llamaOptions.gpuLayers = ui->spinLlamaGpuLayers->value();
     m_llamaOptions.temperature = ui->spinLlamaTemp->value();
     m_llamaOptions.topP = ui->spinLlamaTopP->value();
@@ -496,6 +503,13 @@ void LlamaStories::saveLlamaOptionsFromUi()
 void LlamaStories::refreshLlamaModelList()
 {
     QString previous = ui->cmbLlamaModel->currentText();
+
+    // Repopulating fires currentTextChanged (e.g. clear() briefly leaves it
+    // empty, and Qt auto-selects item 0 the moment the list goes from empty
+    // to non-empty) - block signals so none of that transient state gets
+    // persisted via llamaOptionChanged before we restore the real selection.
+    QSignalBlocker blocker(ui->cmbLlamaModel);
+
     ui->cmbLlamaModel->clear();
 
     QDir dir(ui->txtLlamaModelsDir->text());
@@ -547,6 +561,13 @@ void LlamaStories::on_btnRoleplayDefaults_clicked()
 void LlamaStories::on_btnStartLlamaServer_clicked()
 {
     saveLlamaOptionsFromUi();
+
+    if (m_llamaOptions.modelFile.isEmpty())
+    {
+        QMessageBox::warning(this, "No model selected", "Choose a .gguf model on the Llama.cpp tab first");
+        return;
+    }
+
     ui->lblLlamaServerStatus->setText("Starting...");
     ui->btnStartLlamaServer->setEnabled(false);
     m_llamaServer->start(m_llamaOptions);
@@ -567,9 +588,28 @@ void LlamaStories::on_chkUseModelTemplate_toggled(bool checked)
     saveLlamaOptionsFromUi();
 }
 
+void LlamaStories::on_chkGpuLayersAll_toggled(bool checked)
+{
+    ui->spinLlamaGpuLayers->setEnabled(!checked);
+    saveLlamaOptionsFromUi();
+}
+
 void LlamaStories::llamaOptionChanged()
 {
     saveLlamaOptionsFromUi();
+}
+
+void LlamaStories::updateGpuLayersLimit()
+{
+    saveLlamaOptionsFromUi();
+
+    GgufInfo info = readGgufBlockCount(m_llamaOptions.modelPath());
+    int maxLayers = info.valid ? info.blockCount : 999;
+
+    ui->spinLlamaGpuLayers->setMaximum(maxLayers);
+    ui->spinLlamaGpuLayers->setToolTip(info.valid
+        ? QString("This model has %1 layers. Lower this if it doesn't fit in VRAM.").arg(maxLayers)
+        : "How many layers to offload to the GPU. Lower this if the model doesn't fit in VRAM (pick a valid .gguf model to see its exact layer count here).");
 }
 
 void LlamaStories::llamaServerReady()

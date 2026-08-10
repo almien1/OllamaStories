@@ -41,7 +41,7 @@ QStringList LlamaCppOptions::serverArguments() const
     QStringList args = {
         "-m", modelPath(),
         "-c", QString::number(contextSize),
-        "-ngl", QString::number(gpuLayers),
+        "-ngl", QString::number(gpuLayersAll ? 999 : gpuLayers),
         "--port", QString::number(port),
         "--host", host,
         "--temp", QString::number(temperature),
@@ -66,6 +66,11 @@ QStringList LlamaCppOptions::serverArguments() const
         args += {"--chat-template", chatTemplate};
     }
 
+    if (!apiKey.isEmpty())
+    {
+        args += {"--api-key", apiKey};
+    }
+
     return args;
 }
 
@@ -74,7 +79,7 @@ QStringList LlamaCppOptions::cliArguments(const QString &systemPromptFilePath) c
     QStringList args = {
         "-m", modelPath(),
         "-c", QString::number(contextSize),
-        "-ngl", QString::number(gpuLayers),
+        "-ngl", QString::number(gpuLayersAll ? 999 : gpuLayers),
         "--temp", QString::number(temperature),
         "--top-p", QString::number(topP),
         "--top-k", QString::number(topK),
@@ -114,6 +119,7 @@ void LlamaCppOptions::load(QSettings &settings)
     modelFile = settings.value("modelFile", modelFile).toString();
     host = settings.value("host", host).toString();
     contextSize = settings.value("contextSize", contextSize).toInt();
+    gpuLayersAll = settings.value("gpuLayersAll", gpuLayersAll).toBool();
     gpuLayers = settings.value("gpuLayers", gpuLayers).toInt();
     temperature = settings.value("temperature", temperature).toDouble();
     topP = settings.value("topP", topP).toDouble();
@@ -135,6 +141,7 @@ void LlamaCppOptions::save(QSettings &settings) const
     settings.setValue("modelFile", modelFile);
     settings.setValue("host", host);
     settings.setValue("contextSize", contextSize);
+    settings.setValue("gpuLayersAll", gpuLayersAll);
     settings.setValue("gpuLayers", gpuLayers);
     settings.setValue("temperature", temperature);
     settings.setValue("topP", topP);

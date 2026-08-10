@@ -21,6 +21,7 @@ public:
     void stop();
     bool isRunning() const;
     QString baseUrl() const { return m_baseUrl; }
+    QString apiKey() const { return m_apiKey; }
 
 signals:
     void ready();
@@ -41,6 +42,7 @@ private:
     QNetworkAccessManager *m_network = nullptr;
     QTimer *m_healthTimer = nullptr;
     QString m_baseUrl;
+    QString m_apiKey;
     int m_healthAttempts = 0;
 };
 

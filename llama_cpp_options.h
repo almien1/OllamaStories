@@ -36,12 +36,21 @@ public:
     QString modelFile;
     QString host = "127.0.0.1";
 
-    // Not user-configurable: LlamaCppServer assigns a free port to this just
-    // before launching, since we're the only client that ever talks to it.
+    // Not user-configurable: LlamaCppServer assigns a free port and a random
+    // per-launch API key to these just before launching, since we're the
+    // only client that ever talks to it. The key stops other local
+    // processes - or a malicious webpage's JS - from using the server
+    // while it's running.
     int port = 0;
+    QString apiKey;
 
     int contextSize = 8192;
-    int gpuLayers = 999; // offload as many layers to GPU as possible
+
+    // When true, offload every layer to the GPU (llama.cpp's own "999 always
+    // means all" convention) regardless of how many layers the model has.
+    // When false, gpuLayers gives an explicit count instead.
+    bool gpuLayersAll = true;
+    int gpuLayers = 999;
 
     double temperature = 0.8;
     double topP = 0.95;

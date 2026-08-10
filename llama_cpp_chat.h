@@ -16,7 +16,7 @@ class LlamaCppChat : public QObject
 {
     Q_OBJECT
 public:
-    LlamaCppChat(const QString &baseUrl, const QString &systemPrompt, const QString &firstMessage,
+    LlamaCppChat(const QString &baseUrl, const QString &apiKey, const QString &systemPrompt, const QString &firstMessage,
                  const LlamaCppOptions &options, QObject *parent);
 
 public slots:
@@ -41,6 +41,7 @@ private:
     QNetworkReply *m_currentReply = nullptr;
 
     QString m_baseUrl;
+    QString m_apiKey;
     QJsonArray m_messages;
     LlamaCppOptions m_options;
 
