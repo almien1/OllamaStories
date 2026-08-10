@@ -3,10 +3,12 @@
 
 #include "story_project.h"
 #include "ollama_cli.h"
+#include "llama_cpp_options.h"
 
 class Ollama;
 class QSettings;
 class QListWidgetItem;
+class LlamaCppServer;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -79,6 +81,19 @@ private slots:
     void on_btnTimeReset_pressed();
     void on_btnTimeStep_pressed();
 
+    // Llama.cpp options tab
+    void on_btnBrowseLlamaServer_clicked();
+    void on_btnBrowseModelsDir_clicked();
+    void on_btnRefreshLlamaModels_clicked();
+    void on_btnRoleplayDefaults_clicked();
+    void on_btnStartLlamaServer_clicked();
+    void on_btnStopLlamaServer_clicked();
+    void on_chkUseModelTemplate_toggled(bool checked);
+
+    void llamaOptionChanged();
+    void llamaServerReady();
+    void llamaServerFailed(QString error);
+
 private:
     void loadProject(const QString &filename);
     void saveProject();
@@ -97,6 +112,11 @@ private:
     void resetStoryTimer();
     void storyTimer();
 
+    void loadLlamaOptionsIntoUi();
+    void saveLlamaOptionsFromUi();
+    void refreshLlamaModelList();
+    void startConversation();
+
     Ui::LlamaStories *ui;
 
     StoryProject m_project;
@@ -107,6 +127,10 @@ private:
 
     OllamaCLI m_ai;
     QThread *m_conversationThread = nullptr;
+
+    LlamaCppOptions m_llamaOptions;
+    LlamaCppServer *m_llamaServer = nullptr;
+    bool m_startConversationWhenReady = false;
 
     std::shared_ptr<QSettings> m_settings;
 

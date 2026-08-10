@@ -16,6 +16,7 @@ public:
 
     bool writeModelfile(const QString &filename);
     QString asModelfile() const;
+    QString combinedPrompt() const;
 
     // Storage
     bool m_dirty = true;

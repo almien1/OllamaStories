@@ -1,21 +1,25 @@
-QT += widgets
+QT += widgets network
 
 CONFIG += c++17
 
 DESTDIR = output
 
 SOURCES += \
-    conversation.cpp \
     input_editbox.cpp \
     main.cpp \
+    llama_cpp_chat.cpp \
+    llama_cpp_options.cpp \
+    llama_cpp_server.cpp \
     llama_stories.cpp \
     model_list.cpp \
     ollama_cli.cpp \
     story_project.cpp
 
 HEADERS += \
-    conversation.h \
     input_editbox.h \
+    llama_cpp_chat.h \
+    llama_cpp_options.h \
+    llama_cpp_server.h \
     llama_stories.h \
     model_list.h \
     ollama_cli.h \

@@ -121,3 +121,8 @@ QString StoryProject::asModelfile() const
     lines.append(R"(""")");
     return lines.join("\n");
 }
+
+QString StoryProject::combinedPrompt() const
+{
+    return m_stories.value(m_selectedStory).prompt + "\n\n" + m_globalPrompt;
+}

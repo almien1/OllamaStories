@@ -1,9 +1,12 @@
 #include "llama_stories.h"
 #include "ui_llama_stories.h"
 
-#include "conversation.h"
+#include "llama_cpp_chat.h"
+#include "llama_cpp_server.h"
 #include "input_editbox.h"
 #include "model_list.h"
+#include <QFile>
+#include <QDir>
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
@@ -22,6 +25,28 @@ LlamaStories::LlamaStories(QWidget *parent)
     resetStoryTimer();
     connect(m_storyTimer, &QTimer::timeout, this, &LlamaStories::storyTimer);
 
+    m_llamaServer = new LlamaCppServer(this);
+    connect(m_llamaServer, &LlamaCppServer::ready, this, &LlamaStories::llamaServerReady);
+    connect(m_llamaServer, &LlamaCppServer::failed, this, &LlamaStories::llamaServerFailed);
+    connect(m_llamaServer, &LlamaCppServer::logOutput, this, [](QString text){ qInfo().noquote() << text; });
+
+    m_llamaOptions.load(*m_settings);
+    loadLlamaOptionsIntoUi();
+
+    connect(ui->txtLlamaServerPath, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->txtLlamaModelsDir, &QLineEdit::editingFinished, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->cmbLlamaModel, &QComboBox::currentTextChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaPort, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaContext, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaGpuLayers, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaTemp, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaTopP, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaTopK, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaMinP, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaRepeatPenalty, &QDoubleSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->spinLlamaRepeatLastN, &QSpinBox::valueChanged, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->chkFlashAttention, &QCheckBox::toggled, this, &LlamaStories::llamaOptionChanged);
+    connect(ui->cmbChatTemplate, &QComboBox::currentTextChanged, this, &LlamaStories::llamaOptionChanged);
 }
 
 LlamaStories::~LlamaStories()
@@ -33,6 +58,10 @@ LlamaStories::~LlamaStories()
     if (m_conversationThread && m_conversationThread->isRunning())
     {
         m_conversationThread->exit(0);
+    }
+    if (m_llamaServer)
+    {
+        m_llamaServer->stop();
     }
     delete ui;
 }
@@ -177,24 +206,57 @@ void LlamaStories::run()
         m_conversationThread->exit(0);
     }
     ui->txtRunOutput->clear();
-    ui->tabWidget->setCurrentIndex(3);
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(ui->runTab));
     QCoreApplication::processEvents();
 
-    Conversation *worker = new Conversation(m_project.m_name, "", "hello, who are you?", nullptr); // no parent because we will call moveToThread
+    saveLlamaOptionsFromUi();
+
+    if (m_llamaOptions.modelFile.isEmpty())
+    {
+        QMessageBox::warning(this, "No model selected", "Choose a .gguf model on the Llama.cpp tab first");
+        return;
+    }
+
+    if (m_llamaServer->isRunning())
+    {
+        startConversation();
+    }
+    else
+    {
+        ui->txtRunOutput->insertPlainText("Starting llama.cpp server...\n");
+        QCoreApplication::processEvents();
+        m_startConversationWhenReady = true;
+        ui->lblLlamaServerStatus->setText("Starting...");
+        ui->btnStartLlamaServer->setEnabled(false);
+        m_llamaServer->start(m_llamaOptions);
+    }
+}
+
+void LlamaStories::startConversation()
+{
+    if (m_conversationThread != nullptr)
+    {
+        m_conversationThread->exit(0);
+    }
+
+    QString systemPrompt = m_project.combinedPrompt();
+    LlamaCppChat *worker = new LlamaCppChat(m_llamaServer->baseUrl(), systemPrompt, "hello, who are you?", m_llamaOptions, nullptr); // no parent because we will call moveToThread
     m_conversationThread = new QThread(this);
     worker->moveToThread(m_conversationThread);
 
-    connect(worker, &Conversation::partialText, this, [this](QString text){partialText(text);});
-    connect(worker, &Conversation::responseFinished, this, [this](){responseFinished();});
+    connect(worker, &LlamaCppChat::partialText, this, [this](QString text){partialText(text);});
+    connect(worker, &LlamaCppChat::responseFinished, this, [this](){responseFinished();});
+    connect(worker, &LlamaCppChat::errorOccurred, this, [this](QString error){
+        QMessageBox::warning(this, "llama.cpp error", error);
+    });
 
-    connect(m_conversationThread, &QThread::started, worker, &Conversation::start);
+    connect(m_conversationThread, &QThread::started, worker, &LlamaCppChat::start);
 
     connect(m_conversationThread, &QThread::finished, worker, &QObject::deleteLater);
     connect(m_conversationThread, &QThread::finished, m_conversationThread, &QObject::deleteLater);
     connect(this, &QObject::destroyed, m_conversationThread, &QThread::quit);
-    connect(this, &LlamaStories::sendMessage, worker, &Conversation::sendMessage);
+    connect(this, &LlamaStories::sendMessage, worker, &LlamaCppChat::sendMessage);
     m_conversationThread->start();
-
 }
 
 void LlamaStories::updateModelList()
@@ -350,14 +412,33 @@ void LlamaStories::on_txtProjectNotes_textChanged()
 
 void LlamaStories::on_actionOpenInTerminal_triggered()
 {
-    QStringList args = {"/c", "start", "cmd.exe", "/K", "ollama", "run", "--hidethinking", m_project.m_name};
+    saveLlamaOptionsFromUi();
+
+    if (m_llamaOptions.modelFile.isEmpty())
+    {
+        QMessageBox::warning(this, "No model selected", "Choose a .gguf model on the Llama.cpp tab first");
+        return;
+    }
+
+    // Written to disk (rather than passed as a -p argument) so cmd.exe doesn't
+    // have to survive quoting a multi-line, possibly-quote-containing prompt.
+    QString promptFile = QDir::temp().filePath("LlamaStories_system_prompt.txt");
+    QFile file(promptFile);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        file.write(m_project.combinedPrompt().toUtf8());
+        file.close();
+    }
+
+    QStringList args = {"/c", "start", "cmd.exe", "/K", m_llamaOptions.cliExecutablePath()};
+    args += m_llamaOptions.cliArguments(promptFile);
     QProcess::startDetached("cmd.exe", args);
 }
 
 void LlamaStories::on_actionCopy_triggered()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(ui->txtStoryPrompt->toPlainText() + "\n\n" + ui->txtGlobalPrompt->toPlainText());
+    clipboard->setText(m_project.combinedPrompt());
 }
 
 void LlamaStories::on_btnRenameStory_clicked()
@@ -478,4 +559,148 @@ void LlamaStories::gotModelList(QStringList models)
         // TODO: warning?
     }
     ui->cmbModel->setCurrentText(previousModel);
+}
+
+void LlamaStories::loadLlamaOptionsIntoUi()
+{
+    ui->txtLlamaServerPath->setText(m_llamaOptions.serverPath);
+    ui->txtLlamaModelsDir->setText(m_llamaOptions.modelsDir);
+    ui->spinLlamaPort->setValue(m_llamaOptions.port);
+    ui->spinLlamaContext->setValue(m_llamaOptions.contextSize);
+    ui->spinLlamaGpuLayers->setValue(m_llamaOptions.gpuLayers);
+    ui->spinLlamaTemp->setValue(m_llamaOptions.temperature);
+    ui->spinLlamaTopP->setValue(m_llamaOptions.topP);
+    ui->spinLlamaTopK->setValue(m_llamaOptions.topK);
+    ui->spinLlamaMinP->setValue(m_llamaOptions.minP);
+    ui->spinLlamaRepeatPenalty->setValue(m_llamaOptions.repeatPenalty);
+    ui->spinLlamaRepeatLastN->setValue(m_llamaOptions.repeatLastN);
+    ui->chkFlashAttention->setChecked(m_llamaOptions.flashAttention);
+    ui->chkUseModelTemplate->setChecked(m_llamaOptions.useModelChatTemplate);
+    ui->cmbChatTemplate->setEnabled(!m_llamaOptions.useModelChatTemplate);
+    ui->cmbChatTemplate->setCurrentText(m_llamaOptions.chatTemplate);
+
+    refreshLlamaModelList();
+    ui->cmbLlamaModel->setCurrentText(m_llamaOptions.modelFile);
+}
+
+void LlamaStories::saveLlamaOptionsFromUi()
+{
+    m_llamaOptions.serverPath = ui->txtLlamaServerPath->text();
+    m_llamaOptions.modelsDir = ui->txtLlamaModelsDir->text();
+    m_llamaOptions.modelFile = ui->cmbLlamaModel->currentText();
+    m_llamaOptions.port = ui->spinLlamaPort->value();
+    m_llamaOptions.contextSize = ui->spinLlamaContext->value();
+    m_llamaOptions.gpuLayers = ui->spinLlamaGpuLayers->value();
+    m_llamaOptions.temperature = ui->spinLlamaTemp->value();
+    m_llamaOptions.topP = ui->spinLlamaTopP->value();
+    m_llamaOptions.topK = ui->spinLlamaTopK->value();
+    m_llamaOptions.minP = ui->spinLlamaMinP->value();
+    m_llamaOptions.repeatPenalty = ui->spinLlamaRepeatPenalty->value();
+    m_llamaOptions.repeatLastN = ui->spinLlamaRepeatLastN->value();
+    m_llamaOptions.flashAttention = ui->chkFlashAttention->isChecked();
+    m_llamaOptions.useModelChatTemplate = ui->chkUseModelTemplate->isChecked();
+    m_llamaOptions.chatTemplate = ui->cmbChatTemplate->currentText();
+    m_llamaOptions.save(*m_settings);
+}
+
+void LlamaStories::refreshLlamaModelList()
+{
+    QString previous = ui->cmbLlamaModel->currentText();
+    ui->cmbLlamaModel->clear();
+
+    QDir dir(ui->txtLlamaModelsDir->text());
+    if (dir.exists())
+    {
+        ui->cmbLlamaModel->addItems(dir.entryList({"*.gguf"}, QDir::Files, QDir::Name));
+    }
+
+    if (!previous.isEmpty())
+    {
+        ui->cmbLlamaModel->setCurrentText(previous);
+    }
+}
+
+void LlamaStories::on_btnBrowseLlamaServer_clicked()
+{
+    QString filename = QFileDialog::getOpenFileName(this, "Locate llama-server", ui->txtLlamaServerPath->text(),
+                                                      "llama-server (llama-server*.exe);;All files (*)");
+    if (!filename.isEmpty())
+    {
+        ui->txtLlamaServerPath->setText(filename);
+        saveLlamaOptionsFromUi();
+    }
+}
+
+void LlamaStories::on_btnBrowseModelsDir_clicked()
+{
+    QString dir = QFileDialog::getExistingDirectory(this, "Select models folder", ui->txtLlamaModelsDir->text());
+    if (!dir.isEmpty())
+    {
+        ui->txtLlamaModelsDir->setText(dir);
+        saveLlamaOptionsFromUi();
+        refreshLlamaModelList();
+    }
+}
+
+void LlamaStories::on_btnRefreshLlamaModels_clicked()
+{
+    refreshLlamaModelList();
+}
+
+void LlamaStories::on_btnRoleplayDefaults_clicked()
+{
+    m_llamaOptions.applyRoleplayDefaults();
+    loadLlamaOptionsIntoUi();
+    saveLlamaOptionsFromUi();
+}
+
+void LlamaStories::on_btnStartLlamaServer_clicked()
+{
+    saveLlamaOptionsFromUi();
+    ui->lblLlamaServerStatus->setText("Starting...");
+    ui->btnStartLlamaServer->setEnabled(false);
+    m_llamaServer->start(m_llamaOptions);
+}
+
+void LlamaStories::on_btnStopLlamaServer_clicked()
+{
+    m_llamaServer->stop();
+    ui->lblLlamaServerStatus->setText("Stopped");
+    ui->btnStartLlamaServer->setEnabled(true);
+    ui->btnStopLlamaServer->setEnabled(false);
+}
+
+void LlamaStories::on_chkUseModelTemplate_toggled(bool checked)
+{
+    ui->cmbChatTemplate->setEnabled(!checked);
+    saveLlamaOptionsFromUi();
+}
+
+void LlamaStories::llamaOptionChanged()
+{
+    saveLlamaOptionsFromUi();
+}
+
+void LlamaStories::llamaServerReady()
+{
+    ui->lblLlamaServerStatus->setText("Ready");
+    ui->btnStartLlamaServer->setEnabled(false);
+    ui->btnStopLlamaServer->setEnabled(true);
+
+    if (m_startConversationWhenReady)
+    {
+        m_startConversationWhenReady = false;
+        startConversation();
+    }
+}
+
+void LlamaStories::llamaServerFailed(QString error)
+{
+    ui->lblLlamaServerStatus->setText("Error");
+    ui->lblLlamaServerStatus->setToolTip(error);
+    ui->btnStartLlamaServer->setEnabled(true);
+    ui->btnStopLlamaServer->setEnabled(false);
+
+    m_startConversationWhenReady = false;
+    QMessageBox::warning(this, "llama.cpp error", error);
 }

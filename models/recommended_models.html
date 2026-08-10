@@ -1,0 +1,551 @@
+<title>Roleplay models for this machine</title>
+<style>
+  :root {
+    --bg: #eef1f5;
+    --surface: #ffffff;
+    --surface-2: #f5f7fa;
+    --border: #d7dee6;
+    --text: #1a2130;
+    --text-muted: #5b6577;
+    --accent: #b5652b;
+    --accent-ink: #7a4419;
+    --accent2: #3b6ea5;
+    --good: #2f7d4f;
+    --warn: #8a6d1f;
+    --track: #e2e7ee;
+    --shadow: 0 1px 2px rgba(20, 25, 35, 0.06), 0 8px 24px -12px rgba(20, 25, 35, 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a;
+      --surface: #1b1f26;
+      --surface-2: #20242c;
+      --border: #2b313b;
+      --text: #e6e4de;
+      --text-muted: #99a0ac;
+      --accent: #e2954f;
+      --accent-ink: #f0b077;
+      --accent2: #7db0e0;
+      --good: #5cb583;
+      --warn: #d1a53d;
+      --track: #262b33;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12151a;
+    --surface: #1b1f26;
+    --surface-2: #20242c;
+    --border: #2b313b;
+    --text: #e6e4de;
+    --text-muted: #99a0ac;
+    --accent: #e2954f;
+    --accent-ink: #f0b077;
+    --accent2: #7db0e0;
+    --good: #5cb583;
+    --warn: #d1a53d;
+    --track: #262b33;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  h1, h2, h3 {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .mono {
+    font-family: ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a { color: var(--accent2); }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent2);
+    outline-offset: 2px;
+  }
+
+  /* ---- Header / hardware strip ---- */
+  header.top {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  h1 { font-size: 2.1rem; letter-spacing: -0.01em; }
+
+  .lede {
+    color: var(--text-muted);
+    max-width: 62ch;
+    font-size: 1.02rem;
+  }
+
+  .hw-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .hw-cell {
+    background: var(--surface);
+    padding: 0.85rem 1rem;
+  }
+
+  .hw-cell .k {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .hw-cell .v {
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+
+  /* ---- Section scaffolding ---- */
+  section { margin-top: 2.75rem; }
+
+  section > h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.35rem;
+  }
+
+  section > .section-note {
+    color: var(--text-muted);
+    max-width: 68ch;
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  /* ---- Model cards ---- */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 720px) {
+    .cards { grid-template-columns: 1fr; }
+    .hw-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem 1.3rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .card-head h3 { font-size: 1.12rem; }
+
+  .size-tag {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .card p.desc {
+    margin: 0;
+    font-size: 0.93rem;
+    color: var(--text-muted);
+  }
+
+  .fit-bar {
+    margin: 0.15rem 0 0.05rem;
+  }
+
+  .fit-track {
+    position: relative;
+    height: 10px;
+    background: var(--track);
+    border-radius: 5px;
+    overflow: visible;
+  }
+
+  .fit-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--accent);
+    border-radius: 5px;
+  }
+
+  .fit-fill.overflow { background: var(--warn); }
+
+  .fit-marker {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: var(--text);
+    opacity: 0.55;
+  }
+
+  .fit-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  .fit-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .fit-status.good { color: var(--good); }
+  .fit-status.warn { color: var(--warn); }
+
+  .quants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+  }
+
+  .quant-pill {
+    font-size: 0.75rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+
+  .quant-pill.rec {
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+    font-weight: 600;
+  }
+
+  .dl-cmd {
+    margin-top: 0.3rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text);
+  }
+
+  .repo-link {
+    font-size: 0.78rem;
+  }
+
+  /* ---- Table ---- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 560px;
+    background: var(--surface);
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    background: var(--surface-2);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { color: var(--text); }
+
+  /* ---- Settings panel ---- */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 720px) {
+    .settings-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .setting {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+  }
+
+  .setting .k {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .setting .v {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-top: 0.1rem;
+  }
+
+  .settings-note {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 70ch;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .card:hover { transform: translateY(-2px); }
+  }
+</style>
+
+<div class="page">
+
+  <header class="top">
+    <div class="eyebrow">LlamaStories &middot; Llama.cpp models</div>
+    <h1>Roleplay models that suit this machine</h1>
+    <p class="lede">
+      Picked for the GPU actually installed here, not a generic "best of 2026" list: models that load fully into
+      12&nbsp;GB of VRAM at a roleplay-friendly context length, from finetunes with an active track record for
+      in-character dialogue rather than benchmark trivia.
+    </p>
+    <div class="hw-strip">
+      <div class="hw-cell"><div class="k">GPU</div><div class="v">RTX 3060 &middot; 12 GB VRAM</div></div>
+      <div class="hw-cell"><div class="k">System RAM</div><div class="v">16 GB</div></div>
+      <div class="hw-cell"><div class="k">CPU</div><div class="v">Core i7-8700 (6C/12T)</div></div>
+      <div class="hw-cell"><div class="k">Engine</div><div class="v">llama.cpp (CUDA build)</div></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Four to try</h2>
+    <p class="section-note">
+      Bar shows quant file size against a 16&nbsp;GB budget; the marker is the 12&nbsp;GB VRAM line. Past the line, the
+      remainder has to spill into system RAM &mdash; still usable, just slower per token. Sizes are the exact figures
+      from each repo's file listing, not estimates.
+    </p>
+    <div class="cards">
+
+      <article class="card">
+        <div class="card-head">
+          <h3>L3-8B-Stheno v3.2</h3>
+          <span class="size-tag mono">8B</span>
+        </div>
+        <p class="desc">Sao10K's Llama-3 roleplay finetune. The one most people should start with here &mdash; leaves
+          enough VRAM headroom for a long context window and still answers fast.</p>
+        <div class="fit-bar">
+          <div class="fit-track">
+            <div class="fit-fill" style="width: 35.8%;"></div>
+            <div class="fit-marker" style="left: 75%;"></div>
+          </div>
+          <div class="fit-labels"><span>0 GB</span><span>12 GB (VRAM)</span><span>16 GB</span></div>
+        </div>
+        <div class="fit-status good">Fits fully in VRAM, room to spare</div>
+        <div class="quants">
+          <span class="quant-pill">Q4_K_M &middot; 4.92 GB</span>
+          <span class="quant-pill rec">Q5_K_M &middot; 5.73 GB</span>
+          <span class="quant-pill">Q6_K &middot; 6.59 GB</span>
+          <span class="quant-pill">Q8_0 &middot; 8.54 GB</span>
+        </div>
+        <div class="dl-cmd mono">.\Download-LlamaModel.ps1 -Key stheno-8b -Quant Q5_K_M</div>
+        <div class="repo-link"><a href="https://huggingface.co/bartowski/L3-8B-Stheno-v3.2-GGUF">bartowski/L3-8B-Stheno-v3.2-GGUF</a></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h3>Mistral-Nemo-12B ArliAI RPMax v1.2</h3>
+          <span class="size-tag mono">12B</span>
+        </div>
+        <p class="desc">Trained specifically on roleplay data rather than adapted from a general instruct model.
+          Mistral Nemo's 128k-token architecture means it can hold a long-running story in mind.</p>
+        <div class="fit-bar">
+          <div class="fit-track">
+            <div class="fit-fill" style="width: 54.6%;"></div>
+            <div class="fit-marker" style="left: 75%;"></div>
+          </div>
+          <div class="fit-labels"><span>0 GB</span><span>12 GB (VRAM)</span><span>16 GB</span></div>
+        </div>
+        <div class="fit-status good">Fits fully in VRAM</div>
+        <div class="quants">
+          <span class="quant-pill">Q4_K_M &middot; 7.48 GB</span>
+          <span class="quant-pill rec">Q5_K_M &middot; 8.73 GB</span>
+          <span class="quant-pill">Q6_K &middot; 10.1 GB</span>
+          <span class="quant-pill">Q8_0 &middot; 13 GB</span>
+        </div>
+        <div class="dl-cmd mono">.\Download-LlamaModel.ps1 -Key nemo-rpmax-12b -Quant Q5_K_M</div>
+        <div class="repo-link"><a href="https://huggingface.co/QuantFactory/Mistral-Nemo-12B-ArliAI-RPMax-v1.2-GGUF">QuantFactory/Mistral-Nemo-12B-ArliAI-RPMax-v1.2-GGUF</a></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h3>MythoMax-L2-13B</h3>
+          <span class="size-tag mono">13B</span>
+        </div>
+        <p class="desc">Gryphe's Llama-2 merge, still one of the most road-tested roleplay models around &mdash;
+          older architecture, but consistent and predictable in character voice.</p>
+        <div class="fit-bar">
+          <div class="fit-track">
+            <div class="fit-fill" style="width: 49.2%;"></div>
+            <div class="fit-marker" style="left: 75%;"></div>
+          </div>
+          <div class="fit-labels"><span>0 GB</span><span>12 GB (VRAM)</span><span>16 GB</span></div>
+        </div>
+        <div class="fit-status good">Fits fully in VRAM</div>
+        <div class="quants">
+          <span class="quant-pill rec">Q4_K_M &middot; 7.87 GB</span>
+          <span class="quant-pill">Q5_K_M &middot; 9.23 GB</span>
+          <span class="quant-pill">Q6_K &middot; 10.68 GB</span>
+          <span class="quant-pill">Q8_0 &middot; 13.83 GB</span>
+        </div>
+        <div class="dl-cmd mono">.\Download-LlamaModel.ps1 -Key mythomax-13b -Quant Q4_K_M</div>
+        <div class="repo-link"><a href="https://huggingface.co/TheBloke/MythoMax-L2-13B-GGUF">TheBloke/MythoMax-L2-13B-GGUF</a></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h3>Cydonia-24B v4.3</h3>
+          <span class="size-tag mono">24B</span>
+        </div>
+        <p class="desc">TheDrummer's Mistral-Small finetune &mdash; noticeably sharper prose and reasoning than the
+          8&ndash;13B options. Worth it when quality matters more than reply speed.</p>
+        <div class="fit-bar">
+          <div class="fit-track">
+            <div class="fit-fill overflow" style="width: 66.9%;"></div>
+            <div class="fit-marker" style="left: 75%;"></div>
+          </div>
+          <div class="fit-labels"><span>0 GB</span><span>12 GB (VRAM)</span><span>16 GB</span></div>
+        </div>
+        <div class="fit-status warn">IQ3_M just clears 12 GB &mdash; largest quants need partial CPU offload</div>
+        <div class="quants">
+          <span class="quant-pill rec">IQ3_M &middot; 10.7 GB</span>
+          <span class="quant-pill">Q3_K_M &middot; 11.5 GB</span>
+          <span class="quant-pill">IQ4_XS &middot; 12.8 GB</span>
+          <span class="quant-pill">Q4_K_M &middot; 14.3 GB</span>
+        </div>
+        <div class="dl-cmd mono">.\Download-LlamaModel.ps1 -Key cydonia-24b -Quant IQ3_M</div>
+        <div class="repo-link"><a href="https://huggingface.co/bartowski/TheDrummer_Cydonia-24B-v4.3-GGUF">bartowski/TheDrummer_Cydonia-24B-v4.3-GGUF</a></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Quant cheat sheet</h2>
+    <p class="section-note">Bigger K number and no "I" prefix generally means closer to full quality and more disk/VRAM.
+      For roleplay, dialogue nuance is more quant-sensitive than trivia recall, so it's worth spending VRAM on
+      Q5_K_M over Q4_K_M when a model has room to spare.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Quant</th><th>Bits/weight</th><th>Typical use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">Q4_K_M</td><td class="mono">~4.8</td><td>Safe default; noticeable but minor quality loss</td></tr>
+          <tr><td class="mono">Q5_K_M</td><td class="mono">~5.7</td><td>Sweet spot when VRAM allows &mdash; prefer this over Q4_K_M</td></tr>
+          <tr><td class="mono">Q6_K</td><td class="mono">~6.6</td><td>Close to full quality, meaningfully larger</td></tr>
+          <tr><td class="mono">Q8_0</td><td class="mono">~8.5</td><td>Effectively lossless; rarely worth the VRAM on an 8&ndash;13B model</td></tr>
+          <tr><td class="mono">IQ3_M / IQ4_XS</td><td class="mono">~3&ndash;4</td><td>Importance-weighted quants for squeezing large (20B+) models into limited VRAM</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Roleplay-mode sampling</h2>
+    <p class="section-note">
+      LlamaStories' Llama.cpp tab already starts with these values &mdash; "Reset sampling to roleplay defaults"
+      restores them if you've been experimenting. They favour varied, in-character dialogue over the terse,
+      deterministic replies tuned for factual Q&amp;A.
+    </p>
+    <div class="settings-grid">
+      <div class="setting"><div class="k">Temperature</div><div class="v mono">0.80</div></div>
+      <div class="setting"><div class="k">Top P</div><div class="v mono">0.95</div></div>
+      <div class="setting"><div class="k">Top K</div><div class="v mono">64</div></div>
+      <div class="setting"><div class="k">Min P</div><div class="v mono">0.05</div></div>
+      <div class="setting"><div class="k">Repeat penalty</div><div class="v mono">1.10</div></div>
+      <div class="setting"><div class="k">Repeat last N</div><div class="v mono">256</div></div>
+      <div class="setting"><div class="k">Flash attention</div><div class="v mono">on</div></div>
+      <div class="setting"><div class="k">Chat template</div><div class="v mono">--jinja (model's own)</div></div>
+      <div class="setting"><div class="k">GPU layers</div><div class="v mono">999 (all)</div></div>
+    </div>
+    <p class="settings-note">
+      <code class="mono">min_p 0.05</code> with a fairly open <code class="mono">top_p</code>/<code class="mono">top_k</code>
+      keeps unlikely-but-fitting words on the table &mdash; important for voice and personality &mdash; while still cutting
+      off the truly incoherent tail. <code class="mono">--jinja</code> applies the chat template baked into each
+      GGUF, which matters more than usual here since several roleplay finetunes (Metharme, ChatML variants) expect a
+      specific turn format to stay in character.
+    </p>
+  </section>
+
+  <footer>
+    <span>Get the model files with <code class="mono">models/Download-LlamaModel.ps1</code>, then set the "Models
+      folder" on the Llama.cpp tab to wherever you saved them.</span>
+    <span>llama.cpp binaries: <a href="https://github.com/ggml-org/llama.cpp/releases">ggml-org/llama.cpp releases</a></span>
+  </footer>
+
+</div>
