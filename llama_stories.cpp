@@ -546,6 +546,17 @@ void LlamaStories::on_btnRoleplayDefaults_clicked()
     saveLlamaOptionsFromUi();
 }
 
+void LlamaStories::on_btnOptimizeForSystem_clicked()
+{
+    saveLlamaOptionsFromUi(); // pick up whichever model is currently selected first
+    QString status = m_llamaOptions.applySystemOptimizedDefaults();
+    loadLlamaOptionsIntoUi();
+    saveLlamaOptionsFromUi();
+
+    ui->lblOptimizeStatus->setText(status);
+    ui->lblOptimizeStatus->setVisible(true);
+}
+
 void LlamaStories::on_btnStartLlamaServer_clicked()
 {
     saveLlamaOptionsFromUi();

@@ -160,9 +160,16 @@ GgufInfo readGgufInfo(const QString &path)
     quint64 kvCount = reader.readU64();
     Q_UNUSED(tensorCount);
 
-    bool foundBlockCount = false;
+    // A GGUF file's metadata is a few hundred key/value pairs at most - cheap
+    // enough to just scan all of them for the handful of suffixes we want,
+    // rather than bailing out early once a subset is found.
+    auto readSmallUInt = [&reader](quint32 type) -> int
+    {
+        quint64 value = reader.readAsUInt(type);
+        return (reader.ok() && value < 1000000) ? int(value) : 0;
+    };
 
-    for (quint64 i = 0; i < kvCount && reader.ok() && (!foundBlockCount || !info.hasChatTemplate); ++i)
+    for (quint64 i = 0; i < kvCount && reader.ok(); ++i)
     {
         QString key = reader.readString();
         if (!reader.ok())
@@ -175,15 +182,38 @@ GgufInfo readGgufInfo(const QString &path)
             break;
         }
 
-        if (!foundBlockCount && key.endsWith(".block_count"))
+        if (key.endsWith(".block_count"))
         {
-            quint64 value = reader.readAsUInt(type);
-            if (reader.ok() && value > 0 && value < 100000)
+            int value = readSmallUInt(type);
+            if (value > 0)
             {
-                info.blockCount = int(value);
+                info.blockCount = value;
                 info.valid = true;
             }
-            foundBlockCount = true;
+        }
+        else if (key.endsWith(".context_length"))
+        {
+            info.trainedContextLength = readSmallUInt(type);
+        }
+        else if (key.endsWith(".embedding_length"))
+        {
+            info.embeddingLength = readSmallUInt(type);
+        }
+        else if (key.endsWith(".attention.head_count"))
+        {
+            info.headCount = readSmallUInt(type);
+        }
+        else if (key.endsWith(".attention.head_count_kv"))
+        {
+            info.headCountKv = readSmallUInt(type);
+        }
+        else if (key.endsWith(".attention.key_length"))
+        {
+            info.keyLength = readSmallUInt(type);
+        }
+        else if (key.endsWith(".attention.value_length"))
+        {
+            info.valueLength = readSmallUInt(type);
         }
         else if (key == "tokenizer.chat_template")
         {

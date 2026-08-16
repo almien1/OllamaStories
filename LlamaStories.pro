@@ -6,6 +6,7 @@ DESTDIR = output
 
 SOURCES += \
     gguf_info.cpp \
+    gpu_info.cpp \
     input_editbox.cpp \
     main.cpp \
     llama_cpp_chat.cpp \
@@ -16,6 +17,7 @@ SOURCES += \
 
 HEADERS += \
     gguf_info.h \
+    gpu_info.h \
     input_editbox.h \
     llama_cpp_chat.h \
     llama_cpp_options.h \
@@ -23,6 +25,9 @@ HEADERS += \
     llama_stories.h \
     pch.h \
     story_project.h
+
+# gpu_info.cpp queries VRAM via DXGI (Windows-only; no-ops elsewhere).
+win32: LIBS += -ldxgi
 
 FORMS += \
     llama_stories.ui

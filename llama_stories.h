@@ -73,6 +73,7 @@ private slots:
     void on_btnBrowseModelsDir_clicked();
     void on_btnRefreshLlamaModels_clicked();
     void on_btnRoleplayDefaults_clicked();
+    void on_btnOptimizeForSystem_clicked();
     void on_btnStartLlamaServer_clicked();
     void on_btnStopLlamaServer_clicked();
     void on_chkGpuLayersAll_toggled(bool checked);

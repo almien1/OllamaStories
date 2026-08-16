@@ -548,23 +548,53 @@
            </widget>
           </item>
           <item row="11" column="1">
-           <widget class="QPushButton" name="btnRoleplayDefaults">
-            <property name="toolTip">
-             <string>Reset all the sampling values above back to the recommended roleplay defaults.</string>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <item>
+             <widget class="QPushButton" name="btnRoleplayDefaults">
+              <property name="toolTip">
+               <string>Reset all the sampling values above back to the recommended roleplay defaults.</string>
+              </property>
+              <property name="text">
+               <string>Reset sampling to roleplay defaults</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnOptimizeForSystem">
+              <property name="toolTip">
+               <string>Set sampling, context size and GPU offload to fit the selected model into this machine's actual free VRAM. Falls back to built-in 12GB-GPU defaults if a model isn't selected or its VRAM/metadata can't be read.</string>
+              </property>
+              <property name="text">
+               <string>Optimize for this system</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="12" column="1">
+           <widget class="QLabel" name="lblOptimizeStatus">
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: #5b6577;</string>
             </property>
             <property name="text">
-             <string>Reset sampling to roleplay defaults</string>
+             <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="12" column="0">
+          <item row="13" column="0">
            <widget class="QLabel" name="lblLlamaServerState">
             <property name="text">
              <string>Server</string>
             </property>
            </widget>
           </item>
-          <item row="12" column="1">
+          <item row="13" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QPushButton" name="btnStartLlamaServer">

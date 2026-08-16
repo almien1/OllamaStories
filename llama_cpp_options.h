@@ -31,6 +31,15 @@ public:
     // roleplay-friendly defaults.
     void applyRoleplayDefaults();
 
+    // Resets sampling to the roleplay defaults, then sizes context size and
+    // GPU offload to fit the currently selected model into this machine's
+    // actual free VRAM (queried via DXGI) using the model's own GGUF
+    // metadata for the KV-cache/layer-size math. Falls back to a fixed
+    // estimate for a 12GB-class GPU if no model is selected, its metadata
+    // can't be read, or VRAM can't be queried (old Windows, no GPU, etc).
+    // Returns a one-line explanation of what it did, for display in the UI.
+    QString applySystemOptimizedDefaults();
+
     QString serverPath = "llama-server.exe";
     QString modelsDir;
     QString modelFile;
