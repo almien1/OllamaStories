@@ -8,6 +8,8 @@
 #include <QFile>
 #include <QDir>
 #include <QSignalBlocker>
+#include <QScrollBar>
+#include <QTextBlockFormat>
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
@@ -176,6 +178,7 @@ void LlamaStories::run()
     {
         m_conversationThread->exit(0);
     }
+    m_transcriptMarkdown.clear();
     ui->txtRunOutput->clear();
     ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(ui->runTab));
     QCoreApplication::processEvents();
@@ -194,7 +197,7 @@ void LlamaStories::run()
     }
     else
     {
-        ui->txtRunOutput->insertPlainText("Starting llama.cpp server...\n");
+        appendToTranscript("*Starting llama.cpp server...*\n\n");
         QCoreApplication::processEvents();
         m_startConversationWhenReady = true;
         ui->lblLlamaServerStatus->setText("Starting...");
@@ -281,25 +284,46 @@ void LlamaStories::sendInput()
 
 void LlamaStories::showQuestion(QString text)
 {
-    ui->txtRunOutput->moveCursor(QTextCursor::End);
-    ui->txtRunOutput->insertPlainText(text);
-     ui->txtRunOutput->insertPlainText("\n\n");
+    appendToTranscript(text + "\n\n");
     QCoreApplication::processEvents();
 }
 
 
 void LlamaStories::partialText(QString text)
 {
-    ui->txtRunOutput->moveCursor(QTextCursor::End);
-    ui->txtRunOutput->insertPlainText(text);
+    appendToTranscript(text);
     QCoreApplication::processEvents();
 }
 
 void LlamaStories::responseFinished()
 {
-    ui->txtRunOutput->moveCursor(QTextCursor::End);
-    ui->txtRunOutput->insertPlainText("\n\n");
+    appendToTranscript("\n\n");
     QCoreApplication::processEvents();
+}
+
+void LlamaStories::appendToTranscript(const QString &text)
+{
+    m_transcriptMarkdown += text;
+
+    QScrollBar *scrollBar = ui->txtRunOutput->verticalScrollBar();
+    bool wasAtBottom = scrollBar->value() >= scrollBar->maximum() - 4;
+
+    ui->txtRunOutput->setMarkdown(m_transcriptMarkdown);
+
+    // Markdown import packs paragraphs in tight with no blank space between
+    // them - open them up a bit so back-and-forth turns read like prose
+    // instead of a wall of text.
+    QTextCursor cursor(ui->txtRunOutput->document());
+    cursor.select(QTextCursor::Document);
+    QTextBlockFormat spacing;
+    spacing.setLineHeight(135, QTextBlockFormat::ProportionalHeight);
+    spacing.setBottomMargin(10);
+    cursor.mergeBlockFormat(spacing);
+
+    if (wasAtBottom)
+    {
+        scrollBar->setValue(scrollBar->maximum());
+    }
 }
 
 void LlamaStories::on_btnNewStory_clicked()

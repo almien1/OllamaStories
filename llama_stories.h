@@ -103,6 +103,11 @@ private:
     void refreshLlamaModelList();
     void startConversation();
 
+    // Appends to m_transcriptMarkdown and re-renders txtRunOutput from it -
+    // models write roleplay text with *emphasis* and other markdown, so we
+    // render it as such rather than showing it as a wall of literal symbols.
+    void appendToTranscript(const QString &text);
+
     Ui::LlamaStories *ui;
 
     StoryProject m_project;
@@ -120,6 +125,10 @@ private:
     std::shared_ptr<QSettings> m_settings;
 
     QVector<QAction *> m_mruActions;
+
+    // Raw markdown backing txtRunOutput - kept separately since QTextEdit
+    // has no incremental markdown-append API, only whole-document setMarkdown().
+    QString m_transcriptMarkdown;
 
 };
 #endif // LLAMA_STORIES_H
