@@ -103,10 +103,20 @@ private:
     void refreshLlamaModelList();
     void startConversation();
 
-    // Appends to m_transcriptMarkdown and re-renders txtRunOutput from it -
-    // models write roleplay text with *emphasis* and other markdown, so we
-    // render it as such rather than showing it as a wall of literal symbols.
-    void appendToTranscript(const QString &text);
+    enum class TranscriptRole { User, Assistant, Admin };
+
+    // Appends to m_transcriptSegments (coalescing into the last segment if
+    // it's the same speaker) and re-renders txtRunOutput from it. Rendered
+    // per-segment, rather than as one big markdown string, so each speaker
+    // can be tinted differently - still through markdown, so *emphasis* etc.
+    // in any of them renders properly rather than showing as literal symbols.
+    void appendToTranscript(const QString &text, TranscriptRole role);
+    void refreshTranscript();
+
+    // Admin notes (e.g. "Starting llama.cpp server...") are only relevant
+    // until whatever they're reporting on resolves - drops them from the
+    // transcript once that happens instead of leaving stale status text.
+    void removeAdminMessages();
 
     Ui::LlamaStories *ui;
 
@@ -126,9 +136,15 @@ private:
 
     QVector<QAction *> m_mruActions;
 
-    // Raw markdown backing txtRunOutput - kept separately since QTextEdit
-    // has no incremental markdown-append API, only whole-document setMarkdown().
-    QString m_transcriptMarkdown;
+    // Raw markdown backing txtRunOutput, split into speaker turns so each
+    // can be rendered (and colored) independently - kept separately from
+    // the widget since QTextEdit has no incremental markdown-append API.
+    struct TranscriptSegment
+    {
+        TranscriptRole role;
+        QString text;
+    };
+    QVector<TranscriptSegment> m_transcriptSegments;
 
 };
 #endif // LLAMA_STORIES_H

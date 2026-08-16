@@ -10,6 +10,10 @@
 #include <QSignalBlocker>
 #include <QScrollBar>
 #include <QTextBlockFormat>
+#include <QTextCharFormat>
+#include <QTextDocument>
+#include <QTextDocumentFragment>
+#include <utility>
 
 LlamaStories::LlamaStories(QWidget *parent)
     : QMainWindow(parent)
@@ -178,7 +182,7 @@ void LlamaStories::run()
     {
         m_conversationThread->exit(0);
     }
-    m_transcriptMarkdown.clear();
+    m_transcriptSegments.clear();
     ui->txtRunOutput->clear();
     ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(ui->runTab));
     QCoreApplication::processEvents();
@@ -197,7 +201,7 @@ void LlamaStories::run()
     }
     else
     {
-        appendToTranscript("*Starting llama.cpp server...*\n\n");
+        appendToTranscript("*Starting llama.cpp server...*\n\n", TranscriptRole::Admin);
         QCoreApplication::processEvents();
         m_startConversationWhenReady = true;
         ui->lblLlamaServerStatus->setText("Starting...");
@@ -284,41 +288,108 @@ void LlamaStories::sendInput()
 
 void LlamaStories::showQuestion(QString text)
 {
-    appendToTranscript(text + "\n\n");
+    appendToTranscript(text + "\n\n", TranscriptRole::User);
     QCoreApplication::processEvents();
 }
 
 
 void LlamaStories::partialText(QString text)
 {
-    appendToTranscript(text);
+    appendToTranscript(text, TranscriptRole::Assistant);
     QCoreApplication::processEvents();
 }
 
 void LlamaStories::responseFinished()
 {
-    appendToTranscript("\n\n");
+    appendToTranscript("\n\n", TranscriptRole::Assistant);
     QCoreApplication::processEvents();
 }
 
-void LlamaStories::appendToTranscript(const QString &text)
+void LlamaStories::appendToTranscript(const QString &text, TranscriptRole role)
 {
-    m_transcriptMarkdown += text;
+    if (!m_transcriptSegments.isEmpty() && m_transcriptSegments.last().role == role)
+    {
+        m_transcriptSegments.last().text += text;
+    }
+    else
+    {
+        m_transcriptSegments.append({role, text});
+    }
 
-    QScrollBar *scrollBar = ui->txtRunOutput->verticalScrollBar();
+    refreshTranscript();
+}
+
+void LlamaStories::removeAdminMessages()
+{
+    qsizetype before = m_transcriptSegments.size();
+    m_transcriptSegments.removeIf([](const TranscriptSegment &segment)
+                                   { return segment.role == TranscriptRole::Admin; });
+    if (m_transcriptSegments.size() != before)
+    {
+        refreshTranscript();
+    }
+}
+
+void LlamaStories::refreshTranscript()
+{
+    QTextEdit *out = ui->txtRunOutput;
+    QScrollBar *scrollBar = out->verticalScrollBar();
     bool wasAtBottom = scrollBar->value() >= scrollBar->maximum() - 4;
 
-    ui->txtRunOutput->setMarkdown(m_transcriptMarkdown);
+    out->clear();
+    QTextCursor cursor(out->document());
+
+    // User turns get tinted; admin notes get a light, muted grey (matching
+    // lblOptimizeStatus on the Llama.cpp tab); the model's replies stay the
+    // default text color.
+    static const QColor userColor("darkorange");
+    static const QColor adminColor("#9a9fab");
+
+    bool firstSegment = true;
+    for (const TranscriptSegment &segment : std::as_const(m_transcriptSegments))
+    {
+        // A segment's own trailing "\n\n" doesn't reliably survive markdown
+        // parsing as a separate empty paragraph (a lone trailing blank line
+        // just gets trimmed), so back-to-back turns could end up sharing a
+        // paragraph. Force each segment onto its own block explicitly instead
+        // of relying on that.
+        if (!firstSegment)
+        {
+            cursor.insertBlock();
+        }
+        firstSegment = false;
+
+        // Render each segment's markdown in a scratch document, then splice
+        // its formatted content into the real one - that's what lets us
+        // color just this segment afterwards without disturbing the rest.
+        QTextDocument segmentDoc;
+        segmentDoc.setMarkdown(segment.text);
+        QTextCursor segmentCursor(&segmentDoc);
+        segmentCursor.select(QTextCursor::Document);
+
+        int startPos = cursor.position();
+        cursor.insertFragment(segmentCursor.selection());
+
+        if (segment.role != TranscriptRole::Assistant)
+        {
+            QTextCursor colorCursor(out->document());
+            colorCursor.setPosition(startPos);
+            colorCursor.setPosition(cursor.position(), QTextCursor::KeepAnchor);
+            QTextCharFormat format;
+            format.setForeground(segment.role == TranscriptRole::User ? userColor : adminColor);
+            colorCursor.mergeCharFormat(format);
+        }
+    }
 
     // Markdown import packs paragraphs in tight with no blank space between
     // them - open them up a bit so back-and-forth turns read like prose
     // instead of a wall of text.
-    QTextCursor cursor(ui->txtRunOutput->document());
-    cursor.select(QTextCursor::Document);
+    QTextCursor spacingCursor(out->document());
+    spacingCursor.select(QTextCursor::Document);
     QTextBlockFormat spacing;
     spacing.setLineHeight(135, QTextBlockFormat::ProportionalHeight);
     spacing.setBottomMargin(10);
-    cursor.mergeBlockFormat(spacing);
+    spacingCursor.mergeBlockFormat(spacing);
 
     if (wasAtBottom)
     {
@@ -633,6 +704,8 @@ void LlamaStories::updateModelInfo()
 
 void LlamaStories::llamaServerReady()
 {
+    removeAdminMessages();
+
     ui->lblLlamaServerStatus->setText("Ready");
     ui->lblLlamaServerStatus->setToolTip(m_llamaServer->baseUrl());
     ui->btnStartLlamaServer->setEnabled(false);
@@ -647,6 +720,8 @@ void LlamaStories::llamaServerReady()
 
 void LlamaStories::llamaServerFailed(QString error)
 {
+    removeAdminMessages();
+
     ui->lblLlamaServerStatus->setText("Error");
     ui->lblLlamaServerStatus->setToolTip(error);
     ui->btnStartLlamaServer->setEnabled(true);
