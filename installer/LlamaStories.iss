@@ -24,6 +24,7 @@ Source: "..\output\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\Qt6Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\installer\libs\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\installer\libs\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion

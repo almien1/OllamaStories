@@ -15,6 +15,7 @@ if exist "%targetDir%" (
 copy "%qt%\bin\Qt6Core.dll" "%targetDir%"
 copy "%qt%\bin\Qt6Gui.dll" "%targetDir%"
 copy "%qt%\bin\Qt6Widgets.dll" "%targetDir%"
+copy "%qt%\bin\Qt6Network.dll" "%targetDir%"
 copy "%qt%\bin\libgcc_s_seh-1.dll" "%targetDir%"
 copy "%qt%\bin\libstdc++-6.dll" "%targetDir%"
 copy "%qt%\bin\libwinpthread-1.dll" "%targetDir%"
